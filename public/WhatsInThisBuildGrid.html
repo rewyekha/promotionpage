@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Whats In This Build Grid</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background: white;
+    overflow: auto;
+  }
+
+  table#gridTable {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 12px;
+  }
+
+  thead th {
+    color: white;
+    background-color: navy;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+
+    
+  tbody td {
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    word-wrap: break-word;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background-color: WhiteSmoke; }
+  tr:nth-child(odd) td { background-color: White; }
+
+  a { color: blue; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<div id="gridMessage" style="color:red; font-weight:bold; margin:4px;"></div>
+
+<table id="gridTable">
+  <thead>
+    <tr>
+      <th>Operation</th>
+      <th>Module</th>
+      <th>Project Name</th>
+      <th>Developer</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody id="gridBody"></tbody>
+</table>
+
+<div id="endBar">End</div>
+
+<script>
+window.loadGrid = async function(filters = {}) {
+    const tbody = document.getElementById("gridBody");
+
+    // 🔹 Show loading message inside the table
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; font-weight:bold;">Loading...</td></tr>`;
+
+    try {
+        const res = await fetch("/WhatsInThisBuildGrid/api/data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(filters)
+        });
+        const data = await res.json();
+
+        // Clear old rows
+        tbody.innerHTML = "";
+
+        if (!data.projects || data.projects.length === 0) {
+            // Show message inside the table as a single row
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; font-weight:bold; color:red;">No records found for the selected filters.</td></tr>`;
+            return;
+        }
+
+    let isWhite = true;
+
+    data.projects.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.style.backgroundColor = isWhite ? "White" : "WhiteSmoke";
+      isWhite = !isWhite;
+
+      tr.innerHTML = `
+        <td>${row.Operation}</td>
+        <td>${row.ModuleID}</td>
+        <td><a href="BuildDetails?ProjectID=${row.ProjectID}" target="_blank">${row.ProjectFileName}</a></td>
+        <td>${row.DeveloperName}</td>
+        <td>${row.Description}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    console.log(`Loaded ${data.projects.length} rows into the grid.`);
+
+  } catch (err) {
+    console.error("Failed to load grid:", err);
+  }
+}
+
+// Listen to toolbar iframe messages
+window.addEventListener("message", event => loadGrid(event.data));
+
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Role Assignment Grid</title>
+<style>
+html, body { margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; font-size:12px; background:white; overflow:auto; }
+table { border-collapse: collapse; width: 100%; font-size:12px; }
+thead th { background-color: silver; padding:2px 4px; border:1px solid #ccc; text-align:left; }
+tbody td { padding:2px 4px; border:1px solid #ccc; word-wrap: break-word; text-align:left; vertical-align: top; }
+tr:nth-child(even) td { background-color: yellow; }
+tr:nth-child(odd) td { background-color: white; }
+select { font-size:12px; height:22px; width:100%; }
+  #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<form id="frmRoleAssignment">
+  <input type="hidden" name="FormMode" value="Display">
+  <table id="roleGrid">
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>User Name</th>
+        <th>NT Account</th>
+      </tr>
+    </thead>
+    <tbody id="gridBody"></tbody>
+  </table>
+  <div id="endBar">End</div>
+</form>
+
+<script>
+async function loadGrid(filters = {}) {
+  const tbody = document.getElementById('gridBody');
+  tbody.innerHTML = "<tr><td colspan='3' style='text-align:center'>Loading...</td></tr>";
+  try {
+    const res = await fetch('/api/RoleAssignmentGrid', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(filters)
+    });
+
+    const data = await res.json();
+
+    // Expecting backend to return { developers: [...], roles: [...] }
+    const developers = data.developers || [];
+    const roles = data.roles || [];
+
+    tbody.innerHTML = '';
+    let isYellow = true;
+
+    developers.forEach(dev => {
+      const tr = document.createElement('tr');
+      tr.style.backgroundColor = isYellow ? 'Yellow' : 'White';
+      isYellow = !isYellow;
+
+      const tdRole = document.createElement('td');
+      const select = document.createElement('select');
+      select.name = 'devcmb' + dev.DeveloperID;
+      select.dataset.originalRole = dev.BuildRole; // store original role
+
+      roles.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role.BuildRole;
+        opt.text = role.BuildRole;
+
+        // ✅ Fixed match logic (case-insensitive, trim spaces)
+        if (
+          role.BuildRole &&
+          dev.BuildRole &&
+          role.BuildRole.trim().toLowerCase() === dev.BuildRole.trim().toLowerCase()
+        ) {
+          opt.selected = true;
+        }
+
+        select.appendChild(opt);
+      });
+      tdRole.appendChild(select);
+
+      const tdName = document.createElement('td');
+      tdName.textContent = dev.DeveloperName;
+
+      const tdID = document.createElement('td');
+      tdID.textContent = dev.DeveloperID;
+
+      tr.appendChild(tdRole);
+      tr.appendChild(tdName);
+      tr.appendChild(tdID);
+
+      tbody.appendChild(tr);
+    });
+
+  } catch(err) {
+    console.error(err);
+    tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;color:red'>Error loading data</td></tr>";
+  }
+}
+
+// Listen to messages from toolbar
+window.addEventListener('message', async (event) => {
+  const { FormMode } = event.data;
+  if (FormMode === 'Update') {
+    const updates = [];
+    document.querySelectorAll('select[name^="devcmb"]').forEach(sel => {
+      if (sel.value !== sel.dataset.originalRole) {
+        updates.push({ DeveloperID: sel.name.replace('devcmb',''), BuildRole: sel.value });
+      }
+    });
+    if (updates.length) {
+      await fetch('/api/RoleAssignmentUpdate', {
+        method:'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ updates })
+      });
+      loadGrid(); // reload after update
+    }
+  } else {
+    loadGrid();
+  }
+});
+
+window.onload = () => loadGrid();
+</script>
+</body>
+</html>

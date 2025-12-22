@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="ISO-8859-1">
+  <title>Builder Introduction</title>
+  <meta name="generator" content="Microsoft FrontPage 3.0">
+  <meta name="Microsoft Border" content="none">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <h2>Introduction</h2>
+  <p>
+    This document will describe how the MAS 500 builder process works and what features are available.&nbsp;
+    If you have any questions, please contact one of the following:
+  </p>
+  <ul>
+    <li><a href="mailto:Li,%20Wei">Wei Li</a></li>
+  </ul>
+
+  <h2>Background</h2>
+  <table border="0" width="100%">
+    <tr>
+      <td width="50%" valign="top">
+        Today we have well over 1000 Visual Basic, Visual C++, and Managed projects that make up the MAS 500 product suite.&nbsp;
+        A VB project may include source code that is shared by many other projects.&nbsp;
+        For example; the general.bas module is shared by almost every VB project in MAS 500 today.&nbsp;
+        In addition, each VB project contains references to an array of ActiveX controls and OLE Automation servers (COM Objects).&nbsp;
+        Finally, when a VB project is compiled there are many parameters that must be set consistently across the product like Version numbers, Version information, etc.
+        <p>
+          When VB projects are complied on many different machines it is very easy to have inconsistencies.&nbsp;
+          For example; if the machines do not have the same common source, controls, or the developers do not set the compilation options correctly, the VB project will be compiled with the incorrect information.
+        </p>
+      </td>
+      <td width="50%" valign="top">
+        <img src="/images/ProjectProperties.jpg" alt="Project Properties" width="443" height="391">
+      </td>
+    </tr>
+  </table>
+
+  <p>
+    It is also important to make sure we compile every project that must go into the final product.&nbsp;
+    If we miss a project or compile an old one we reduce the quality of the product.
+  </p>
+  <p>
+    Does Source Safe contain the most current <strong>tested</strong> source?&nbsp; The answer is no.&nbsp;
+    While Source Safe contains the most current source in general, the source is not always tested.&nbsp;
+    Many developers use Source Safe as a backup or to manage their changes.
+  </p>
+  <hr>
+
+  <h2>The Solution</h2>
+  <p>To address these problems the build process will incorporate the following features and procedures.</p>
+  <ol>
+    <li>The build process will run unattended on a daily basis.</li>
+    <li>
+      The build process will by default perform incremental builds.&nbsp;
+      This means that VB projects will not be extracted from Source Safe and compiled unless identified by the developer, project manager, or configuration administrator.
+    </li>
+    <li>
+      The build process will build every VB project when instructed to or when shared components are changed.&nbsp;
+      This includes common source and object references that have new class id's.
+    </li>
+    <li>Developers and project managers will explicitly promote their projects into the build process.</li>
+  </ol>
+  <hr>
+
+  <h2>The process</h2>
+  <p>The following are the steps to the process.&nbsp; Please review the steps and complete them as instructed.</p>
+
+  <h3><a name="For all users">For all users</a></h3>
+  <table border="0" width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td width="47%" valign="top">
+        <ol>
+          <li>
+            Locate the Builder's main web page.&nbsp;
+            This can be found from <a href="http://tahoe">http://tahoe</a> or
+            <a href="http://afbuilderxx/builder">http://afbuilderxx/builder</a> where xx is the MAS 500 version number.&nbsp;
+            For example <a href="http://afbuidler30/builder">http://afbuidler30/builder</a>.
+          </li>
+          <li>From the contents page (shown on the right) select the task you would like to perform.</li>
+          <li>
+            <a href="UserRegistration">Register</a> with the build process by selecting registration from the Contents.&nbsp;
+            Enter your name and email name (the one in exchange).&nbsp; For example; John Grant.&nbsp;
+            Do not use your SMTP address (i.e. <a href="mailto:johng@sota.com">johng@sota.com</a>)
+          </li>
+          <li>Have your manager set your <a href="#Roles Assignment">role</a>.</li>
+          <li>View the build status regularly.</li>
+          <li>View the build schedule.</li>
+        </ol>
+      </td>
+      <td width="53%">
+        <img src="/images/Content.jpg" alt="Contents" width="162" height="290">
+      </td>
+    </tr>
+  </table>
+
+  <h3>For Developers</h3>
+  <ol>
+    <li><a href="UserRegistration">Register</a> with the build process.&nbsp; <a href="#For all users">See For all users</a>.</li>
+    <li>Promote your code when you have unit tested the code.</li>
+    <li>View the build status.&nbsp; Determine what projects failed and fix them.</li>
+  </ol>
+
+  <h3>For Program Managers</h3>
+  <ol>
+    <li><a href="UserRegistration">Register</a> with the build process.&nbsp; <a href="#For all users">See For all users</a>.</li>
+    <li><a href="#Project Maintenance">Maintain your projects</a>, add, delete, or change information about your project.</li>
+    <li><a href="#Project Assignment">Assign</a> developers to projects.&nbsp; Each user must have their <a href="#Roles Assignment">role</a> set.</li>
+    <li>Review the promoted code.&nbsp; If you need to promote your team's code then do so.</li>
+    <li>View the build status of the projects your team is responsible for.</li>
+  </ol>
+  <hr>
+
+  <h2>The Details</h2>
+  <p>The details will describe each task and how to perform them.</p>
+
+  <h3><a name="Project Assignment">Developer Assignment</a></h3>
+  <table border="0" width="100%">
+    <tr>
+      <td width="22%">
+        <a target="_self" href="DeveloperAssignmentold.asp">Developer assignment</a> is simple.&nbsp;
+        When you first enter this page all the projects you are responsible for will be displayed.&nbsp;
+        They will show the developer assigned, the name for the project, and the description.
+      </td>
+      <td width="78%" valign="top">
+        <img src="/images/DeveloperAssignment.jpg" alt="Developer Assignment" width="507" height="151">
+      </td>
+    </tr>
+  </table>
+
+  <table border="0" width="100%">
+    <tr>
+      <td>
+        You can change the developer on any entry to any other developer you wish by selecting them from the combo box under the Developer column and pressing the Update button.&nbsp;
+        You can also query any other module, project manager, or developer by selecting the value in the combo boxes: Manager, Module, and Developer, then pressing the Query button.&nbsp;
+        <em><strong>Note: you can only update the developer assignment for projects assigned to you.</strong></em>
+      </td>
+    </tr>
+  </table>
+
+  <h3><a name="Manager Assignment">Manager Assignment</a></h3>
+  <table border="0" width="100%">
+    <tr>
+      <td width="23%" valign="top">
+        <a href="ManagerAssignmentold.asp">Manager assignment</a> works similar to Developer Assignment in that all the projects you are currently assigned to will be displayed.
+      </td>
+      <td width="77%" valign="top">
+        <img src="/images/ManagerAssignment.jpg" alt="Manager Assignment" width="505" height="103">
+      </td>
+    </tr>
+  </table>
+
+  <table border="0" width="100%">
+    <tr>
+      <td>
+        The difference with Manager assignment is that any manager can assume the Project Manager role of any project.&nbsp;
+        This is designed to allow managers to make the needed decisions during busy times.&nbsp;
+        As a rule, managers should not take control of a project unless agreed upon by the current project manager.
+      </td>
+    </tr>
+  </table>
+
+  <h3><a name="Roles Assignment">Roles Assignment</a></h3>
+  <table border="0" width="100%">
+    <tr>
+      <td width="31%" valign="top">
+        <a href="RoleAssignmentold.asp">Role assignment</a> is an administrative function and should only be executed by managers and administrators.&nbsp;
+        Access to this page is controlled by IIS and NTFS security privileges.
+      </td>
+      <td width="69%" valign="top">
+        <img src="/images/roleassignment.jpg" alt="Role Assignment" width="324" height="247">
+      </td>
+    </tr>
+  </table>
+
+  <h3><a name="Project Promotion">Project Promotion</a></h3>
+  <table border="0" width="100%">
+    <tr>
+      <td width="33%" valign="top">
+        Project promotion is used to explicitly identify to the build process when to <em><strong>extract</strong></em> new source code.&nbsp;
+        When the build process runs it will extract (get) from Source Safe the latest version of the code for any project that has a "promote" status.&nbsp;
+        If the project was identified as a project to compile the build process will compile that project after the project is extracted from Source Safe.
+      </td>
+      <td width="67%" valign="top">
+        <img src="/images/ProjectPromotion2.jpg" alt="Project Promotion" width="494" height="146">
+      </td>
+    </tr>
+    <tr>
+      <td width="28%" valign="top">
+        To change a project's promotion status, simply change the value of the combo box on the left to the value desired.&nbsp;
+        Then when all values are set correctly, press the update button.
+        <p>
+          <em><strong>Note</strong>: the "Promote All" and "Demote All" buttons will promote or demote all projects on the page.&nbsp;
+          This will change the current status of each project and there is no undo so be careful.</em>
+        </p>
+      </td>
+      <td width="72%" valign="top">
+        <img src="/images/ProjectPromotion1.jpg" alt="Project Promotion Options" width="320" height="140">
+      </td>
+    </tr>
+    <tr>
+      <td width="33%" valign="top">The project promotion page works differently depending on your role.</td>
+      <td width="67%" valign="top">
+        <table border="0" width="100%">
+          <tr>
+            <td width="18%" valign="top" bgcolor="#88FFFF"><strong>Developers</strong></td>
+            <td width="82%" valign="top" bgcolor="#88FFFF">
+              If your role is "Developer", when the Project Promotion page is displayed, only projects assigned to you will be displayed.&nbsp;
+              You can change the query set to filter the projects by module.
+            </td>
+          </tr>
+          <tr>
+            <td width="18%" valign="top" bgcolor="#88FFFF"><strong>Project Manager</strong></td>
+            <td width="82%" valign="top" bgcolor="#88FFFF">
+              If your role is "Project Manager", when the Project Promotion page is displayed no items will be displayed until you press the query button.&nbsp;
+              Project managers can promote any project.&nbsp;
+              It is expected that developers will promote their own project, but in the absence of the developer the project manager can promote the project.
+            </td>
+          </tr>
+          <tr>
+            <td width="18%" valign="top" bgcolor="#88FFFF"><strong>Administrator</strong></td>
+            <td width="82%" valign="top" bgcolor="#88FFFF">If your role is "Administrator" you can promote any project.</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <h3><a name="Project Maintenance">Project Maintenance</a></h3>
+  <table border="0" width="100%">
+    <tr>
+      <td width="34%" valign="top">
+        Project Maintenance allows a Project Manager or Administrator to add new projects to the Builder database.&nbsp;
+        The projects can be of various types and each type has specific settings.&nbsp;
+        The project entry describes to the Builder one or more of the following pieces of information:
+        <ul>
+          <li>What directory or file to extract from Source Safe and should the extraction be recursive (include subdirectories).</li>
+          <li>What Source Safe database to use.</li>
+          <li>What order to get the project file and if the source is shared by other projects.</li>
+          <li>What projects to compile.</li>
+          <li>If the project is a shared runtime library (Shared dll or ocx).</li>
+          <li>Where to put the extracted file or compiled output.</li>
+        </ul>
+      </td>
+      <td width="66%" valign="top">
+        <img src="/Images/ProjectMaintenance.jpg" alt="Project Maintenance" width="550" height="375">
+      </td>
+    </tr>
+    <tr>
+      <td width="34%" valign="top">
+        Use the find button to locate other projects.
+        <p>Projects must be set to Obsolete before they can be deleted.&nbsp; Obsolete projects are not included in the build process.</p>
+      </td>
+      <td width="66%" valign="top"></td>
+    </tr>
+  </table>
+
+  <p>&nbsp;</p>
+</body>
+</html>

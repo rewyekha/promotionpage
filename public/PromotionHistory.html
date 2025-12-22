@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="iso-8859-1">
+  <title>Promotion History</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* hide page scrollbar */
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    #toolbar {
+      height: 100px; /* fixed toolbar height */
+      width: 100%;
+      border: none;
+      flex-shrink: 0; /* prevent shrinking */
+      overflow: hidden; /* hide toolbar scrollbars */
+    }
+    #grid {
+      flex: 1; /* take remaining space */
+      width: 100%;
+      border: none;
+      overflow: auto; /* grid can scroll if content overflows */
+    }
+  </style>
+</head>
+<body>
+  <!-- Toolbar iframe -->
+  <iframe id="toolbar" name="ToolBar" src="/PromotionHistoryToolBar" scrolling="no"></iframe>
+
+  <!-- Grid iframe -->
+  <iframe id="grid" name="GridForm" src="/PromotionHistoryGrid" scrolling="yes"></iframe>
+</body>
+</html>

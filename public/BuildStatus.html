@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Build Status</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* hide page scrollbar */
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Toolbar iframe */
+  #toolbar {
+    height: 65px; /* adjust height as needed */
+    width: 100%;
+    border: none;
+    flex-shrink: 0; /* prevent shrinking */
+    overflow: hidden; /* hide scrollbars */
+  }
+
+  /* Grid iframe */
+  #grid {
+    flex: 1; /* take remaining vertical space */
+    width: 100%;
+    border: none;
+    overflow: auto; /* allow scrolling if content overflows */
+  }
+</style>
+</head>
+<body>
+  <!-- Toolbar iframe -->
+  <iframe id="toolbar" name="ToolBar" src="/BuildStatusToolBar" scrolling="no"></iframe>
+
+  <!-- Grid iframe -->
+  <iframe id="grid" name="GridForm" src="/BuildStatusGrid" scrolling="yes"></iframe>
+</body>
+</html>

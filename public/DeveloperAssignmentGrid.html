@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Developer Assignment Grid</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background: white;
+    overflow: auto;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 12px;
+  }
+  thead th {
+    background-color: silver;
+    border: 1px solid #ccc;
+    padding: 2px 4px;
+    text-align: left;
+  }
+  tbody td {
+    border: 1px solid #ccc;
+    padding: 2px 4px;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background-color: yellow; }
+  tr:nth-child(odd) td { background-color: white; }
+  select {
+    font-size: 12px;
+    height: 22px;
+    width: 100%;
+  }
+  #gridMessage {
+    color: red;
+    font-weight: bold;
+    margin: 4px;
+  }
+  #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<div id="gridMessage"></div>
+
+<table id="developerGrid">
+  <thead>
+    <tr>
+      <th>Developer</th>
+      <th>Project Name</th>
+      <th>Description</th>
+      <th>Manager</th>
+    </tr>
+  </thead>
+  <tbody id="gridBody"></tbody>
+</table>
+<div id="endBar">End</div>
+
+<script>
+let currentData = { projects: [], developers: [] };
+// 🔹 Store last applied filters (optional, currently unused)
+let currentFilters = {};
+
+window.addEventListener("message", event => {
+  const data = event.data;
+  if (data.FormMode === "Update") {
+    updateDevelopers();
+  } else {
+    loadGrid(data);
+  }
+});
+
+async function loadGrid(filters) {
+  currentFilters = filters; // 🔹 Save filters if needed
+  const tbody = document.getElementById("gridBody");
+
+  // Show loading message immediately
+  tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;font-weight:bold;'>Loading...</td></tr>";
+
+  // 🔹 Force browser to render the loading row
+  await new Promise(requestAnimationFrame);
+
+  try {
+    const res = await fetch("/api/DeveloperAssignmentGrid", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(filters)
+    });
+    currentData = await res.json();
+
+    const projects = currentData.projects || [];
+    const devs = currentData.developers || [];
+
+    // Clear tbody after fetching
+    tbody.innerHTML = "";
+
+    if (!projects.length) {
+      tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;font-weight:bold;color:red;'>No records found</td></tr>";
+      return;
+    }
+
+    projects.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+
+      // Developer dropdown (no "None" option)
+      const tdDev = document.createElement("td");
+      const sel = document.createElement("select");
+      sel.name = "devcmb" + p.ID;
+      sel.dataset.originalDeveloper = p.DeveloperID;
+
+      devs.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d.DeveloperID;
+        opt.text = d.DeveloperName;
+        if (d.DeveloperID?.toString() === p.DeveloperID?.toString()) opt.selected = true;
+        sel.appendChild(opt);
+      });
+
+      tdDev.appendChild(sel);
+
+      const tdProj = document.createElement("td");
+      tdProj.textContent = p.ProjectFldr;
+
+      const tdDesc = document.createElement("td");
+      tdDesc.textContent = p.Description;
+
+      const tdMgr = document.createElement("td");
+      tdMgr.textContent = p.ManagerName;
+
+      tr.append(tdDev, tdProj, tdDesc, tdMgr);
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Failed to load grid:", err);
+    tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;color:red;'>Error loading data</td></tr>";
+  }
+}
+
+async function updateDevelopers() {
+  const selects = document.querySelectorAll("select[name^='devcmb']");
+  const updates = [];
+  selects.forEach(sel => {
+    const projectId = sel.name.replace("devcmb", "");
+    const originalDev = sel.dataset.originalDeveloper;
+    if (sel.value !== originalDev) {
+      updates.push({ projectId, developerId: sel.value });
+    }
+  });
+
+  const msg = document.getElementById("gridMessage");
+
+  if (!updates.length) {
+    msg.textContent = "No changes to update.";
+    msg.style.color = "blue";
+    setTimeout(() => (msg.textContent = ""), 2000);
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/DeveloperAssignmentGrid", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ FormMode: "Update", updates })
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      msg.textContent = "Developer(s) updated successfully!";
+      msg.style.color = "green";
+
+      // Force browser to show message for 1 second
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Clear message
+      msg.textContent = "";
+
+      // 🔹 Clear the grid instead of reloading data
+      const tbody = document.getElementById("gridBody");
+      tbody.innerHTML = "";
+
+      // Optional placeholder message for empty grid
+      tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;color:gray;'>Grid is empty</td></tr>";
+
+      // 🔹 Old behavior (commented):
+      // await loadGrid(currentFilters); // Reloaded full data
+      // await loadGrid({}); // Reloaded all data
+    } else {
+      msg.textContent = "Update failed.";
+      msg.style.color = "red";
+      setTimeout(() => (msg.textContent = ""), 2000);
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Update failed due to error.";
+    msg.style.color = "red";
+    setTimeout(() => (msg.textContent = ""), 2000);
+  }
+}
+</script>
+</body>
+</html>

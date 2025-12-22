@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Maintenance</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Toolbar Styles */
+        .toolbar {
+            background-color: #B0C4DE;
+            color: black;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .toolbar-header {
+            background-color: navy;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: medium;
+            padding: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .toolbar-controls {
+            font-size: 11px;
+        }
+
+        .toolbar-controls table {
+            background-color: #B0C4DE;
+            border-spacing: 2px;
+            border-collapse: separate;
+        }
+
+        .toolbar-controls td {
+            white-space: nowrap;
+            color: black;
+            font-size: 11px;
+        }
+
+        .toolbar-controls input[type="text"] {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+        }
+
+        .toolbar-controls select {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: black;
+        }
+
+        .toolbar-controls input[type="button"] {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            width: 100px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            background-color: white;
+            padding: 10px;
+        }
+
+        /* Status Bar Styles */
+        .status-bar {
+            background-color: navy;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: white;
+        }
+
+        .form-container table {
+            border-spacing: 2px;
+            border-collapse: separate;
+        }
+
+        .form-container td {
+            font-size: 11px;
+            vertical-align: middle;
+        }
+
+        .form-container input[type="text"],
+        .form-container select,
+        .form-container textarea {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+        }
+
+        .form-container input[type="text"] {
+            font-size: 11px;
+        }
+
+        .form-container .help-text {
+            background-color: WhiteSmoke;
+            font-size: 11px;
+        }
+
+        .form-container .help-text ul {
+            margin: 0;
+            padding-left: 15px;
+        }
+
+        /* Project List Styles */
+        .project-list {
+            background-color: white;
+        }
+
+        .project-list-header {
+            background-color: navy;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border-spacing: 2px;
+            border-collapse: separate;
+        }
+
+        .project-list-header td {
+            padding: 5px;
+            color: white;
+        }
+
+        .project-list-content table {
+            border-spacing: 2px;
+            border-collapse: separate;
+            width: 100%;
+        }
+
+        .project-list-content td {
+            font-size: 11px;
+            padding: 2px;
+            vertical-align: top;
+        }
+
+        .project-list-content tr:nth-child(even) {
+            background-color: WhiteSmoke;
+        }
+
+        .project-list-content tr:nth-child(odd) {
+            background-color: White;
+        }
+
+        .project-list-content a {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        /* Configuration Management Section */
+        .config-mgmt {
+            background-color: lightgrey;
+            border-spacing: 2px;
+            border-collapse: separate;
+            margin-top: 10px;
+        }
+
+        .config-mgmt-header {
+            font-family: Arial;
+            color: red;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .config-mgmt td {
+            font-size: 11px;
+            vertical-align: middle;
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: red;
+            background-color: #ffeeee;
+            border: 1px solid red;
+        }
+
+        hr {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar Section -->
+    <div class="toolbar">
+        <div class="toolbar-header">
+            Project Maintenance
+        </div>
+        <div class="toolbar-controls">
+            <table>
+                <tr>
+                    <td align="right">&nbsp;Filter by Project:</td>
+                    <td>
+                        <input name="txtProjectMask" id="txtProjectMask" accesskey="P" size="30" />
+                    </td>
+                    <td>&nbsp; Use % mask to filter.</td>
+                    <td align="right">&nbsp;Module:</td>
+                    <td>
+                        <select size="1" name="cmbModuleNo" id="cmbModuleNo">
+                            <option value="0" selected>All</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">&nbsp;Filter by Description:</td>
+                    <td>
+                        <input name="txtDescriptionMask" id="txtDescriptionMask" accesskey="D" size="30" />
+                    </td>
+                    <td align="center">
+                        <input type="button" value="  Find " accesskey="F" onclick="submitForm('Find')" name="cmdFind" />
+                    </td>
+                    <td align="right">&nbsp;Project Type:</td>
+                    <td>
+                        <select size="1" name="cmbProjType" id="cmbProjType">
+                            <option value="All" selected>All</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+
+            <table id="actionButtons" class="hidden">
+                <tr>
+                    <td align="center">
+                        <input type="button" value=" New  " accesskey="N" onclick="submitForm('New')" name="cmdNew" style="width:100px" />
+                    </td>
+                    <td align="center">
+                        <input type="button" value=" Save " accesskey="S" onclick="submitForm('Save')" name="cmdSave" style="width:100px" />
+                    </td>
+                    <td align="center">
+                        <input type="button" value="Delete" accesskey="R" onclick="submitForm('Delete')" name="cmdDelete" style="width:100px" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Main Content Section -->
+    <div class="main-content">
+        <!-- Status Bar -->
+        <div class="status-bar" id="statusBar">
+            &nbsp;<strong>Mode: New</strong>
+        </div>
+
+        <!-- Project List View -->
+        <div id="projectListView" class="project-list">
+            <table class="project-list-header" cellspacing="2" cellpadding="0" border="0">
+                <tr>
+                    <td nowrap align="left" width="200"><strong>&nbsp;Project Name</strong></td>
+                    <td nowrap align="left" width="300"><strong>&nbsp;Description</strong></td>
+                    <td nowrap align="left" width="150"><strong>&nbsp;Developer Name</strong></td>
+                    <td nowrap align="left" width="100%"><strong>&nbsp;Project Type</strong></td>
+                </tr>
+            </table>
+
+            <div class="project-list-content" id="projectListContent">
+                <div class="loading">Click Find to search for projects...</div>
+            </div>
+        </div>
+
+        <!-- Project Form View -->
+        <div id="projectFormView" class="form-container">
+            <form id="frmProjectMaintenance" name="frmProjectMaintenance">
+                <table cellspacing="2" cellpadding="0" border="0">
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Project Type:</font></td>
+                        <td width="300" nowrap align="left">
+                            <select size="1" name="cmbProjectTypes" id="cmbProjectTypes">
+                            </select>
+                        </td>
+                        <td width="100%" class="help-text" align="left"></td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">File Name:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" id="txtProjectName" name="txtProjectName" maxlength="64" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the Filename, VB6 Project Name, C++ Workspace Name, or .NET Project Name. Examples: smzma001.vbp; ObjMgr.dsw; apzrt001.rpt; BusinessDesktop.vbproj
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Module:</font></td>
+                        <td width="300" nowrap align="left">
+                            <select size="1" name="cmbModuleNo" id="cmbModuleNoForm">
+                            </select>
+                        </td>
+                        <td width="100%" class="help-text" align="left"></td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Project Folder:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtProjectFldr" id="txtProjectFldr" maxlength="64" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the Folder name that contains the source for this project.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Description:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtDescription" id="txtDescription" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter a brief description of this project.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Project Manager:</font></td>
+                        <td width="300" nowrap align="left">
+                            <select size="1" name="cmbProjectManagerID" id="cmbProjectManagerID">
+                            </select>
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Select the Project Manager for this project.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Developer:</font></td>
+                        <td width="300" nowrap align="left">
+                            <select size="1" name="cmbDeveloperID" id="cmbDeveloperID">
+                            </select>
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Select the Developer assigned to this project.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Full Path:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtFullPath" id="txtFullPath" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the full path to the source code on the development server.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Destination Path:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtDestinationPath" id="txtDestinationPath" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the destination path on the production servers.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Binary Path:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtBinPath" id="txtBinPath" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the path to where compiled binaries are created.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Obsolete:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="checkbox" name="chkObsolete" id="chkObsolete" value="on">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Check to indicate that this project is obsolete and should be ignored.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Recursive:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="checkbox" name="chkRecursive" id="chkRecursive" value="1">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Check to indicate that subdirectories should be included in promotions.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Build:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="checkbox" name="chkBuild" id="chkBuild" value="on">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Check to indicate that this project needs to be built during promotions.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Config File:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="checkbox" name="chkConfigFile" id="chkConfigFile" value="on">
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Check to indicate that this project has a configuration file.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Source Safe Location:</font></td>
+                        <td width="300" nowrap align="left">
+                            <select size="1" name="cmbSSLocation" id="cmbSSLocation">
+                            </select>
+                        </td>
+                        <td width="100%" class="help-text" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Select the Source Safe location for the source.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Comments:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtComments" id="txtComments" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" class="help-text" align="left"></td>
+                    </tr>
+                </table>
+
+                <p></p>
+                <hr />
+                <p class="config-mgmt-header">
+                    &nbsp;&nbsp;** For Configuration Management Use Only **
+                </p>
+
+                <table class="config-mgmt" cellspacing="2" cellpadding="0" border="0">
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Copy to DB Builder:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="checkbox" name="chkCopyToDBBldr" id="chkCopyToDBBldr" value="on">
+                        </td>
+                        <td width="100%" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Check to indicate that this component needs to be copied to the database builder.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+
+                    <tr valign="middle">
+                        <td width="3">&nbsp;</td>
+                        <td width="135" nowrap align="right"><font size="-1">Database Build Folder:</font></td>
+                        <td width="300" nowrap align="left">
+                            <input type="text" name="txtDBBldrFolderPath" id="txtDBBldrFolderPath" maxlength="255" size="40" value="">
+                        </td>
+                        <td width="100%" align="left">
+                            <font size="-1">
+                                <ul>
+                                    <li>Enter the DBBuilder destination folder if this is a database build component.
+                                </ul>
+                            </font>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Hidden form fields -->
+                <input type="hidden" id="FormMode" name="FormMode" value="New">
+                <input type="hidden" id="LastFormMode" name="LastFormMode" value="New">
+                <input type="hidden" id="QryModuleNo" name="QryModuleNo" value="0">
+                <input type="hidden" id="QryProjectMask" name="QryProjectMask" value="">
+                <input type="hidden" id="QryDescriptionMask" name="QryDescriptionMask" value="">
+                <input type="hidden" id="QryProjectID" name="QryProjectID" value="0">
+                <input type="hidden" id="QryProjectType" name="QryProjectType" value="All">
+            </form>
+        </div>
+    </div>
+            <!-- Grid Footer - exactly matching GridFooter.htm -->
+            <table border="0" width="100%" bgcolor="#000000" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="100%" style="height: 10px; padding: 2px;">
+                        <p align="center" style="margin: 0; line-height: 1.2;">
+                            <strong>
+                                <font color="#FFFFFF">End</font>
+                            </strong>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+    <script>
+        // Global variables
+        let projectMaintenanceManager = null;
+        let currentMode = 'New';
+        let currentProjectId = 0;
+        let projects = [];
+        let lookupData = {};
+
+        // Project Maintenance Manager Class
+        class ProjectMaintenanceManager {
+            constructor() {
+                this.currentUser = 'admin';
+                this.userRole = 'Administrator';
+                this.init();
+            }
+
+            async init() {
+                console.log('Initializing Project Maintenance...');
+                try {
+                    await this.loadLookupData();
+                    this.setFormMode('New');
+                    this.showActionButtons();
+                    console.log('Initialization complete');
+                } catch (error) {
+                    console.error('Initialization failed:', error);
+                    this.showError('Failed to initialize: ' + error.message);
+                }
+            }
+
+            async loadLookupData() {
+                console.log('Loading lookup data...');
+                try {
+                    const response = await fetch('/project-maintenance/lookup-data');
+                    if (!response.ok) {
+                        throw new Error('Failed to load lookup data');
+                    }
+                    lookupData = await response.json();
+
+                    this.populateDropdowns();
+                } catch (error) {
+                    console.error('Error loading lookup data:', error);
+                    this.showError('Failed to load lookup data: ' + error.message);
+                }
+            }
+
+            populateDropdowns() {
+                // Populate Modules dropdown in toolbar
+                this.populateDropdown('cmbModuleNo', lookupData.modules, 'ModuleNo', 'Description', '0', 'All');
+
+                // Populate Project Types dropdown in toolbar
+                this.populateDropdown('cmbProjType', lookupData.projectTypes, 'ProjectTypeID', 'Description', 'All', 'All');
+
+                // Populate form dropdowns
+                this.populateDropdown('cmbProjectTypes', lookupData.projectTypes, 'ProjectTypeID', 'Description');
+                this.populateDropdown('cmbModuleNoForm', lookupData.modules, 'ModuleNo', 'Description');
+                this.populateDropdown('cmbProjectManagerID', lookupData.developers, 'DeveloperID', 'DeveloperName');
+                this.populateDropdown('cmbDeveloperID', lookupData.developers, 'DeveloperID', 'DeveloperName');
+                this.populateDropdown('cmbSSLocation', lookupData.ssLocations, 'SSLocation', 'SSLocation');
+            }
+
+            populateDropdown(elementId, data, valueField, textField, defaultValue, defaultText) {
+                const dropdown = document.getElementById(elementId);
+                if (!dropdown) return;
+
+                dropdown.innerHTML = '';
+
+                if (defaultValue && defaultText) {
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = defaultValue;
+                    defaultOption.textContent = defaultText;
+                    dropdown.appendChild(defaultOption);
+                }
+
+                if (data && Array.isArray(data)) {
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item[valueField];
+                        option.textContent = item[textField];
+                        dropdown.appendChild(option);
+                    });
+                }
+            }
+
+            async searchProjects() {
+                console.log('Searching projects...');
+                try {
+                    const projectMask = document.getElementById('txtProjectMask').value || '';
+                    const descriptionMask = document.getElementById('txtDescriptionMask').value || '';
+                    const moduleNo = document.getElementById('cmbModuleNo').value || '0';
+                    const projectType = document.getElementById('cmbProjType').value || 'All';
+
+                    const params = new URLSearchParams({
+                        projectMask,
+                        descriptionMask,
+                        moduleNo,
+                        projectType
+                    });
+
+                    const response = await fetch(`/project-maintenance/projects?${params}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to search projects');
+                    }
+                    const projectList = await response.json();
+
+                    this.displayProjectList(projectList);
+                    this.setFormMode('Find');
+
+                } catch (error) {
+                    console.error('Error searching projects:', error);
+                    this.showError('Failed to search projects: ' + error.message);
+                }
+            }
+
+            displayProjectList(projectList) {
+                const contentDiv = document.getElementById('projectListContent');
+
+                if (projectList.length === 0) {
+                    contentDiv.innerHTML = '<div class="loading">No projects found.</div>';
+                    return;
+                }
+
+                let html = '<table cellspacing="2" cellpadding="0" border="0">';
+
+                projectList.forEach((project, index) => {
+                    const bgColor = index % 2 === 0 ? 'White' : 'WhiteSmoke';
+                    html += `
+                        <tr valign="top" style="background-color: ${bgColor}">
+                            <td nowrap width="200" align="left">
+                                <font size="-1">
+                                    <a href="#" onclick="editProject(${project.ID})">${this.escapeHtml(project.ProjectFileName || '')}</a>
+                                </font>
+                            </td>
+                            <td nowrap width="300" align="left">
+                                <font size="-1">${this.escapeHtml(project.Description || '')}</font>
+                            </td>
+                            <td nowrap width="150" align="left">
+                                <font size="-1">${this.escapeHtml(project.DeveloperName || '')}</font>
+                            </td>
+                            <td nowrap width="100%" align="left">
+                                <font size="-1">${this.escapeHtml(project.ProjectTypeID || '')}</font>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</table>';
+                contentDiv.innerHTML = html;
+            }
+
+            async loadProject(projectId) {
+                console.log('Loading project:', projectId);
+                try {
+                    const response = await fetch(`/project-maintenance/project/${projectId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to load project');
+                    }
+                    const project = await response.json();
+
+                    this.populateForm(project);
+                    this.setFormMode('Edit');
+                    currentProjectId = projectId;
+
+                } catch (error) {
+                    console.error('Error loading project:', error);
+                    this.showError('Failed to load project: ' + error.message);
+                }
+            }
+
+            populateForm(project) {
+                document.getElementById('txtProjectName').value = project.ProjectFileName || '';
+                document.getElementById('txtProjectFldr').value = project.ProjectFldr || '';
+                document.getElementById('txtDescription').value = project.Description || '';
+                document.getElementById('txtFullPath').value = project.FullPath || '';
+                document.getElementById('txtDestinationPath').value = project.DestinationPath || '';
+                document.getElementById('txtBinPath').value = project.BinPath || '';
+                document.getElementById('txtComments').value = project.Comments || '';
+                document.getElementById('txtDBBldrFolderPath').value = project.DBBldrFldr || '';
+
+                // Set dropdowns
+                this.setDropdownValue('cmbProjectTypes', project.ProjectTypeID);
+                this.setDropdownValue('cmbModuleNoForm', project.ModuleNo);
+                this.setDropdownValue('cmbProjectManagerID', project.ProjectManagerID);
+                this.setDropdownValue('cmbDeveloperID', project.DeveloperID);
+                this.setDropdownValue('cmbSSLocation', project.SSLocation);
+
+                // Set checkboxes
+                document.getElementById('chkObsolete').checked = project.Obsolete == 1;
+                document.getElementById('chkRecursive').checked = project.Recursive == 1;
+                document.getElementById('chkBuild').checked = project.Build == 1;
+                document.getElementById('chkConfigFile').checked = project.ConfigFile == 1;
+                document.getElementById('chkCopyToDBBldr').checked = project.CopyToDBBldr == 1;
+
+                // Set hidden fields
+                document.getElementById('QryProjectID').value = project.ID;
+                currentProjectId = project.ID;
+            }
+
+            setDropdownValue(elementId, value) {
+                const dropdown = document.getElementById(elementId);
+                if (dropdown && value) {
+                    dropdown.value = value;
+                }
+            }
+
+            clearForm() {
+                const form = document.getElementById('frmProjectMaintenance');
+                const inputs = form.querySelectorAll('input[type="text"], textarea');
+                inputs.forEach(input => input.value = '');
+
+                const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+
+                const dropdowns = form.querySelectorAll('select');
+                dropdowns.forEach(dropdown => dropdown.selectedIndex = 0);
+
+                currentProjectId = 0;
+                document.getElementById('QryProjectID').value = '0';
+            }
+
+            setFormMode(mode) {
+                currentMode = mode;
+                document.getElementById('FormMode').value = mode;
+                document.getElementById('LastFormMode').value = mode;
+
+                let statusMessage = `Mode: ${mode}`;
+
+                switch (mode) {
+                    case 'New':
+                        this.clearForm();
+                        this.showFormView();
+                        break;
+                    case 'Edit':
+                        this.showFormView();
+                        statusMessage += ' - Editing project';
+                        break;
+                    case 'Find':
+                        this.showListView();
+                        statusMessage += ' - Search results';
+                        break;
+                }
+
+                document.getElementById('statusBar').innerHTML = `&nbsp;<strong>${statusMessage}</strong>`;
+            }
+
+            showFormView() {
+                document.getElementById('projectFormView').style.display = 'block';
+                document.getElementById('projectListView').style.display = 'none';
+            }
+
+            showListView() {
+                document.getElementById('projectFormView').style.display = 'none';
+                document.getElementById('projectListView').style.display = 'block';
+            }
+
+            showActionButtons() {
+                // Show action buttons if user has appropriate role
+                if (this.userRole === 'Administrator' || this.userRole === 'Project Manager') {
+                    document.getElementById('actionButtons').classList.remove('hidden');
+                }
+            }
+
+            async submitForm(mode) {
+                console.log('Submit form:', mode);
+
+                switch (mode) {
+                    case 'Find':
+                        await this.searchProjects();
+                        break;
+                    case 'New':
+                        this.setFormMode('New');
+                        break;
+                    case 'Save':
+                        await this.saveProject();
+                        break;
+                    case 'Delete':
+                        await this.deleteProject();
+                        break;
+                }
+            }
+
+            async saveProject() {
+                console.log('Saving project...');
+
+                // Validation
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                try {
+                    const formData = this.getFormData();
+                    const isNew = currentProjectId == 0;
+                    const url = isNew ? '/project-maintenance/project' : `/project-maintenance/project/${currentProjectId}`;
+                    const method = isNew ? 'POST' : 'PUT';
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(error);
+                    }
+
+                    const result = await response.json();
+
+                    if (isNew && result.id) {
+                        currentProjectId = result.id;
+                        document.getElementById('QryProjectID').value = result.id;
+                        this.setFormMode('Edit');
+                    }
+
+                    this.updateStatus('Data has been saved successfully.');
+
+                } catch (error) {
+                    console.error('Save error:', error);
+                    this.updateStatus('Save failed: ' + error.message);
+                }
+            }
+
+            async deleteProject() {
+                console.log('Deleting project...');
+
+                if (currentProjectId == 0) {
+                    alert('Delete not allowed for New entry.');
+                    return;
+                }
+
+                if (!document.getElementById('chkObsolete').checked) {
+                    alert('You must first mark the project obsolete before you can delete it.');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to delete this project?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/project-maintenance/project/${currentProjectId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(error);
+                    }
+
+                    this.updateStatus('Data has been deleted. Mode change to New');
+                    this.setFormMode('New');
+
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    this.updateStatus('Delete failed: ' + error.message);
+                }
+            }
+
+            validateForm() {
+                const projectName = document.getElementById('txtProjectName').value.trim();
+                if (!projectName) {
+                    alert('Project Filename required.');
+                    document.getElementById('txtProjectName').focus();
+                    return false;
+                }
+
+                const projectFldr = document.getElementById('txtProjectFldr').value.trim();
+                if (!projectFldr) {
+                    document.getElementById('txtProjectFldr').value = 'Unknown';
+                    alert('Project Folder changed to unknown');
+                }
+
+                return true;
+            }
+
+            getFormData() {
+                return {
+                    ProjectFileName: document.getElementById('txtProjectName').value.trim(),
+                    ProjectTypeID: document.getElementById('cmbProjectTypes').value,
+                    ModuleNo: parseInt(document.getElementById('cmbModuleNoForm').value) || 0,
+                    ProjectFldr: document.getElementById('txtProjectFldr').value.trim(),
+                    Description: document.getElementById('txtDescription').value.trim(),
+                    ProjectManagerID: document.getElementById('cmbProjectManagerID').value,
+                    DeveloperID: document.getElementById('cmbDeveloperID').value,
+                    FullPath: document.getElementById('txtFullPath').value.trim(),
+                    DestinationPath: document.getElementById('txtDestinationPath').value.trim(),
+                    BinPath: document.getElementById('txtBinPath').value.trim(),
+                    Obsolete: document.getElementById('chkObsolete').checked ? 1 : 0,
+                    Recursive: document.getElementById('chkRecursive').checked ? 1 : 0,
+                    Build: document.getElementById('chkBuild').checked ? 1 : 0,
+                    ConfigFile: document.getElementById('chkConfigFile').checked ? 1 : 0,
+                    CopyToDBBldr: document.getElementById('chkCopyToDBBldr').checked ? 1 : 0,
+                    SSLocation: document.getElementById('cmbSSLocation').value,
+                    Comments: document.getElementById('txtComments').value.trim(),
+                    DBBldrFldr: document.getElementById('txtDBBldrFolderPath').value.trim()
+                };
+            }
+
+            updateStatus(message) {
+                const statusBar = document.getElementById('statusBar');
+                statusBar.innerHTML = `&nbsp;<strong>Mode: ${currentMode} - ${message}</strong>`;
+            }
+
+            showError(message) {
+                const contentDiv = document.getElementById('projectListContent');
+                contentDiv.innerHTML = `<div class="error">${this.escapeHtml(message)}</div>`;
+            }
+
+            escapeHtml(unsafe) {
+                if (!unsafe) return '';
+                return String(unsafe)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+        }
+
+        // Global functions (called from buttons)
+        function submitForm(mode) {
+            console.log('Global submitForm called:', mode);
+            if (projectMaintenanceManager) {
+                projectMaintenanceManager.submitForm(mode);
+            } else {
+                console.error('ProjectMaintenanceManager not initialized');
+            }
+        }
+
+        function editProject(projectId) {
+            console.log('Edit project:', projectId);
+            if (projectMaintenanceManager) {
+                projectMaintenanceManager.loadProject(projectId);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing Project Maintenance...');
+            projectMaintenanceManager = new ProjectMaintenanceManager();
+        });
+
+        console.log('Project Maintenance script loaded successfully');
+    </script>
+</body>
+</html>

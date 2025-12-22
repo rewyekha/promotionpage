@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="iso-8859-1">
+  <title>Role Assignment</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #FFFFFF;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    #toolbar {
+      height: 54px; /* same as your original ASP frame height */
+      width: 100%;
+      border: none;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    #grid {
+      flex: 1;
+      width: 100%;
+      border: none;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Toolbar iframe -->
+  <iframe id="toolbar" name="ToolBar" src="/RoleAssignmentToolBar" scrolling="no"></iframe>
+
+  <!-- Grid iframe -->
+  <iframe id="grid" name="GridForm" src="/RoleAssignmentGrid" scrolling="yes"></iframe>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Manager Assignment</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Toolbar iframe */
+  #toolbarFrame {
+    height: 55px;
+    width: 100%;
+    border: none;
+    flex-shrink: 0;
+  }
+
+  /* Grid iframe */
+  #gridFrame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    overflow: auto;
+  }
+</style>
+</head>
+<body>
+  <!-- Toolbar iframe -->
+  <iframe id="toolbarFrame" src="/ManagerAssignmentToolbar" scrolling="no"></iframe>
+
+  <!-- Grid iframe -->
+  <iframe id="gridFrame" src="/ManagerAssignmentGrid" name="gridFrame" scrolling="yes"></iframe>
+</body>
+</html>

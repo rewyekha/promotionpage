@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microsoft Project Exported Information</title>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family:Arial, Helvetica, sans-serif;background-color:#B0C4DE;margin-top:0;margin-left:0;margin-right:0">
+    <div align="left">
+        <table width="100%" border="0" cellpadding="0" cellspacing="2">
+            <tr style="background-color:navy">
+                <td style="font-size:medium;color:white;font-weight:bold" align="center">
+                    MAS 500 Build Schedule
+                </td>
+            </tr>
+            <tr style="color:black;font-size:x-small;white-space:wrap">
+                <td width="100%">
+                    MAS 500 builds take place Monday and Thursday of each week.  
+                    The Monday build is designated a "non-schema change" build, meaning that items promoted for this build should not have any dependency on a change to the database schema.
+                    The Thursday build, or "schema change build", will include database schema changes in addition to promoted items.
+                </td>
+            </tr>
+        </table>
+
+        <table width="100%" border="1" cellpadding="1" cellspacing="2">
+            <tbody style="color:black;font-size:x-small;white-space:nowrap">
+                <tr style="color: darkred">
+                    <td style="font-size: small" align="left" width="25%">Next schema change build:</td>
+                    <td align="left" width="100%">{{NextSchemaBuild}}</td>
+                </tr>
+                <tr style="color: darkgreen">
+                    <td style="font-size: small" align="left" width="25%">Next non-schema change build:</td>
+                    <td align="left" width="100%">{{NextNonSchemaBuild}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Build Status Detail</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 10px; background: #fff; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { border: 1px solid #ccc; padding: 4px; text-align: left; vertical-align: top; }
+  th { background: silver; }
+  tr:nth-child(even) { background: WhiteSmoke; }
+  tr:nth-child(odd) { background: White; }
+
+  /* Header style like old ASP table header */
+  #header {
+    background-color: black;
+    color: white;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  #message {
+    color:red;
+    font-weight:bold;
+    margin-bottom: 10px;
+  }
+    #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px; /* right below last row */
+  }
+</style>
+</head>
+<body>
+
+<!-- Modern header replacing old <h2> -->
+<div id="header">Build Status Detail</div>
+
+<div id="message"></div>
+
+<table id="buildTable">
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Build</th>
+      <th>Start</th>
+      <th>Stop</th>
+      <th>Message</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="endBar">End</div>
+
+<script>
+async function loadBuildDetails() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get("ProjectID");
+
+    // Redirect if ProjectID missing
+    if (!projectId) {
+      window.location.href = "/BuildStatus"; 
+      return;
+    }
+
+    const response = await fetch(`/api/builddetails/${projectId}`, {
+      headers: { 'x-iis-logon-user': 'DOMAIN\\build' } // simulate LOGON_USER
+    });
+    const data = await response.json();
+
+    if (data.error) {
+      document.getElementById("message").textContent = data.error;
+      return;
+    }
+
+    // Update header dynamically
+    document.getElementById("header").textContent =
+      "Build Status Detail for Project: " + (data.projectFileName || projectId);
+
+    const tbody = document.querySelector("#buildTable tbody");
+    tbody.innerHTML = "";
+
+    data.builds.forEach(build => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${build.Operation}</td>
+        <td>${build.BuildLabel}</td>
+        <td>${build.StartTimeFormatted}</td>
+        <td>${build.EndTimeFormatted}</td>
+        <td>${build.ErrorMessage || ""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("message").textContent = "Error loading build details.";
+  }
+}
+
+// Initial load
+loadBuildDetails();
+</script>
+
+</body>
+</html>

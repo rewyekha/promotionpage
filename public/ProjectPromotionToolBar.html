@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Project Promotion Tool Bar</title>
+<style>
+body { font-family: Arial, Helvetica, sans-serif; background-color:#B0C4DE; margin:0; }
+table { font-size: small; white-space: nowrap; }
+input, select { font-size: small; }
+</style>
+<base target="main">
+</head>
+<body>
+<form id="frmProjectPromotionToolBar">
+  <!-- Header -->
+  <table style="background-color:navy;width:100%">
+    <tr>
+      <td align="center" style="color:white;font-weight:bold;font-size:medium">Project Promotion</td>
+    </tr>
+  </table>
+
+  <!-- Buttons and Promote Type -->
+  <table style="background-color:#B0C4DE;width:100%" cellspacing="2" cellpadding="0">
+    <tr>
+      <td style="width:150px"><button type="button" id="btnUpdate">Update</button></td>
+      <td style="width:30px"></td>
+      <td style="width:150px; text-align:right;"><button type="button" id="btnPromoteAll">Promote All</button></td>
+      <td style="width:30px"></td>
+      <td style="width:150px"><input type="radio" name="radPromoteType" value="NextBuild" checked> Next Build</td>
+      <td id="nextBuildDate" style="width:150px"></td>
+    </tr>
+    <tr>
+      <td style="width:150px"><button type="button" id="btnQuery">Project List</button></td>
+      <td style="width:30px"></td>
+      <td style="width:150px; text-align:right;"><button type="button" id="btnDemoteAll">Demote All</button></td>
+      <td style="width:30px"></td>
+      <td style="width:150px"><input type="radio" name="radPromoteType" value="NextSchemaBuild"> Next Schema Build</td>
+      <td id="nextSchemaBuildDate" style="width:150px"></td>
+    </tr>
+  </table>
+
+  <!-- Project Filters -->
+  <table style="background-color:#B0C4DE;width:100%" cellspacing="2" cellpadding="0">
+    <tr>
+      <td style="width:120px">Project Name:</td>
+      <td><input type="text" name="txtProjectMask" id="txtProjectMask" size="28"><span>Use % mask to filter</span></td>
+    </tr>
+    <tr>
+      <td>Status:</td>
+      <td><select name="cmbPromotionStatus" id="cmbPromotionStatus"></select></td>
+      <td>Module:</td>
+      <td><select name="cmbModuleNo" id="cmbModuleNo"></select></td>
+      <td>Developer:</td>
+      <td><select name="cmbDeveloperID" id="cmbDeveloperID"></select></td>
+      <td>Project Type:</td>
+      <td><select name="cmbProjectType" id="cmbProjectType"></select></td>
+    </tr>
+  </table>
+</form>
+
+<script>
+async function loadToolbarData() {
+    const res = await fetch("/ProjectPromotion/api/toolbarData");
+    const data = await res.json();
+
+   const fillSelect = (id, items, valueField, textField, selectedValue = "All") => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '<option value="All">All</option>';
+        items.forEach(i => {
+            const opt = document.createElement("option");
+            opt.value = i[valueField];
+            opt.textContent = i[textField];
+            if (i[valueField] === selectedValue) opt.selected = true; // 🔹 select logged-in user
+            sel.appendChild(opt);
+        });
+    };
+
+    fillSelect("cmbModuleNo", data.modules, "ModuleNo", "Description");
+    fillSelect("cmbDeveloperID", data.developers, "DeveloperID", "DeveloperName", data.loggedInUser);
+    fillSelect("cmbPromotionStatus", data.promotionStatus, "PromotionStatus", "Description");
+    fillSelect("cmbProjectType", data.projectTypes, "ProjectTypeID", "Description");
+
+    document.getElementById("nextBuildDate").textContent = data.nextBuildDate || "";
+    document.getElementById("nextSchemaBuildDate").textContent = data.nextSchemaBuildDate || "";
+}
+
+// Collect current values from grid iframe
+function collectGridUpdates() {
+    const gridFrame = parent.frames["GridForm"];
+    if (!gridFrame || !gridFrame.loadGrid) return {};
+    const gridDoc = gridFrame.document || gridFrame.contentDocument;
+    const selects = gridDoc.querySelectorAll("select[name^='procmb']");
+    const updates = {};
+    selects.forEach(s => updates[s.name] = s.value);
+    return updates;
+}
+
+// Generic function to submit updates
+async function submitForm(formMode, updates = null) {
+    const gridFrame = parent.frames["GridForm"];
+    if (!gridFrame) return;
+
+    let proceed = true;
+    if (formMode.startsWith("Promote") || formMode === "DemoteAll") {
+        let msg = formMode === "DemoteAll" ? 
+                  "This will demote all projects. Proceed?" : 
+                  "This will promote all projects. Proceed?";
+        proceed = confirm(msg);
+    }
+    if (!proceed) return;
+
+    if (!updates) updates = collectGridUpdates();
+
+    const payload = {
+        formMode,
+        updates,
+        QryDeveloperID: document.getElementById("cmbDeveloperID").value,
+        QryModuleNo: document.getElementById("cmbModuleNo").value,
+        QryPromotionStatus: document.getElementById("cmbPromotionStatus").value,
+
+       //QryPromotionStatus: "All", // Always fetch all statuses after update
+        QryProjectTypeID: document.getElementById("cmbProjectType").value,
+        QryProjectMask: document.getElementById("txtProjectMask").value
+    };
+
+    try {
+        const res = await fetch("/ProjectPromotion/api/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        alert(result.message || "Operation successful");
+
+        // Reload grid with fresh DB data
+        if (gridFrame.loadGrid) {
+            gridFrame.loadGrid(payload); // payload now has QryPromotionStatus = "All"
+        } else {
+            gridFrame.location.reload();
+        }
+    } catch (err) {
+        console.error("Update failed:", err);
+        alert("Update failed. Check console.");
+    }
+}
+
+// Button events
+document.getElementById("btnUpdate").onclick = () => submitForm("Update");
+
+// Promote All
+document.getElementById("btnPromoteAll").onclick = () => {
+    const gridFrame = parent.frames["GridForm"];
+    if (!gridFrame) return;
+
+    const type = document.querySelector("input[name='radPromoteType']:checked").value;
+    const promoteValue = type === "NextBuild" ? "PromoteNextBuild" : "PromoteNextSchemaBuild";
+
+    const gridDoc = gridFrame.document || gridFrame.contentDocument;
+    const updates = {};
+    gridDoc.querySelectorAll("select[name^='procmb']").forEach(s => {
+        s.value = promoteValue;
+        updates[s.name] = promoteValue;
+    });
+
+    submitForm(type === "NextBuild" ? "PromoteAllNextBuild" : "PromoteAllNextSchemaBuild", updates);
+};
+
+// Demote All
+document.getElementById("btnDemoteAll").onclick = () => {
+    const gridFrame = parent.frames["GridForm"];
+    if (!gridFrame) return;
+
+    const gridDoc = gridFrame.document || gridFrame.contentDocument;
+    const updates = {};
+    gridDoc.querySelectorAll("select[name^='procmb']").forEach(s => {
+        s.value = "None";
+        updates[s.name] = "None";
+    });
+
+    submitForm("DemoteAll", updates);
+};
+
+// Query / filter
+document.getElementById("btnQuery").onclick = () => {
+    const gridFrame = parent.frames["GridForm"];
+    const type = document.querySelector("input[name='radPromoteType']:checked").value;
+
+    const filters = {
+        QryDeveloperID: document.getElementById("cmbDeveloperID").value,
+        QryModuleNo: document.getElementById("cmbModuleNo").value,
+        QryPromotionStatus: document.getElementById("cmbPromotionStatus").value,
+        QryProjectTypeID: document.getElementById("cmbProjectType").value,
+        QryProjectMask: document.getElementById("txtProjectMask").value,
+        PromoteType: type
+    };
+
+    if (gridFrame && gridFrame.loadGrid) {
+        gridFrame.loadGrid(filters); // fetch fresh DB data
+    } else if (gridFrame) {
+        gridFrame.location.href = `/ProjectPromotionGrid?` + new URLSearchParams(filters).toString();
+    }
+};
+
+// Initialize
+window.onload = loadToolbarData;
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Build Status Tool Bar</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: SlateGray;
+    font-size: 12px; /* match ASP */
+  }
+
+  .toolbar-container {
+    text-align: center; /* center all content like ASP */
+    padding: 4px 2px;
+    color: white;
+    line-height: 1.5;
+  }
+
+  .toolbar-container select,
+  .toolbar-container input[type="text"] {
+    font-size: 12px;
+    padding: 2px 4px;
+    margin: 0 2px;
+  }
+
+  .toolbar-container input[type="button"] {
+    font-size: 12px;
+    padding: 2px 6px;
+    margin: 0 2px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #lastBuild {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<form name="frmBuildStatusToolBar" id="frmBuildStatusToolBar">
+  <div class="toolbar-container">
+    <span id="lastBuild">Build Status - Last build: </span>
+    <input type="button" value="Query" onclick="submitForm('Query')" name="cmdQuery">
+
+    Module:
+    <select name="cmbModuleNo" id="cmbModuleNo"></select>
+
+    Developer:
+    <select name="cmbDeveloperID" id="cmbDeveloperID"></select>
+
+    Build Status:
+    <select name="cmbBuildStatus" id="cmbBuildStatus"></select>
+
+    Project mask:
+    <input type="text" name="txtProjectMask" id="txtProjectMask" size="15"> Use % mask to filter
+  </div>
+</form>
+
+<script>
+async function loadToolbarData() {
+  try {
+    const response = await fetch('/api/buildstatus/toolbar-data');
+    const data = await response.json();
+
+    document.getElementById("lastBuild").innerHTML =
+      "Build Status - Last build: " + (data.settings?.CurrentBuildNo || "");
+
+    const moduleSel = document.getElementById("cmbModuleNo");
+    moduleSel.innerHTML = '<option value="0" selected>All</option>';
+    data.modules.forEach(m => {
+      moduleSel.innerHTML += `<option value="${m.ModuleNo}">${m.ModuleID}</option>`;
+    });
+
+    const devSel = document.getElementById("cmbDeveloperID");
+    if (["Project Manager", "Administrator"].includes((data.developer?.BuildRole || "").trim())) {
+      devSel.innerHTML = '<option value="All" selected>All</option>';
+      data.developers.forEach(d => {
+        devSel.innerHTML += `<option value="${d.DeveloperID}">${d.DeveloperName}</option>`;
+      });
+    } else {
+      devSel.innerHTML = `<option value="${data.developer.DeveloperID}" selected>${data.developer.DeveloperName}</option>`;
+    }
+
+    const bsSel = document.getElementById("cmbBuildStatus");
+    bsSel.innerHTML = '<option value="All">All</option>';
+    data.buildStatus.forEach(bs => {
+      if (bs.BuildStatus.trim() === "Error") {
+        bsSel.innerHTML += `<option value="${bs.BuildStatus}" selected>${bs.BuildStatus}</option>`;
+      } else {
+        bsSel.innerHTML += `<option value="${bs.BuildStatus}">${bs.BuildStatus}</option>`;
+      }
+    });
+  } catch (err) {
+    console.error("Failed to load toolbar data:", err);
+  }
+}
+
+function submitForm(frmMode) {
+  const payload = {
+    FormMode: frmMode,
+    qryBuildStatus: document.getElementById("cmbBuildStatus").value,
+    qryModuleNo: document.getElementById("cmbModuleNo").value,
+    qryDeveloperID: document.getElementById("cmbDeveloperID").value,
+    qryProjectMask: document.getElementById("txtProjectMask").value
+  };
+
+  const gridFrame = parent.frames["GridForm"];
+  gridFrame.postMessage(payload, "*");
+}
+
+loadToolbarData();
+</script>
+</body>
+</html>

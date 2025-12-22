@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Project Promotion Grid</title>
+<style>
+body { font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 3px; font-size: 12px; text-align: left; }
+th { background-color: navy; color: white; }
+tr:nth-child(even) { background-color: whitesmoke; }
+tr:nth-child(odd) { background-color: white; }
+select { font-size: 12px; }
+tfoot td { background-color: black; color: white; text-align: center; font-weight: bold; }
+</style>
+</head>
+<body>
+<form id="frmProjectPromotion">
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Promotion Date</th>
+      <th>Next Extract Date</th>
+      <th>Module</th>
+      <th>Project Name</th>
+      <th>Developer</th>
+      <th>Last Extract Date</th>
+      <th>Project Manager</th>
+      <th>PromoteID</th>
+    </tr>
+  </thead>
+  <tbody id="projectRows"></tbody>
+  <tfoot>
+    <tr><td colspan="9">End</td></tr>
+  </tfoot>
+</table>
+</form>
+
+<script>
+function formatDate(d) {
+    if (!d) return "";
+    const date = new Date(d);
+    if (isNaN(date) || date.getFullYear() <= 1900) return "";
+    return date.toLocaleString('en-US', { hour12: true });
+}
+
+
+// Expose loadGrid globally
+window.loadGrid = async function(filters = {}) {
+    const tbody = document.getElementById("projectRows");
+
+    // 🔹 Show loading state immediately
+    tbody.innerHTML = `<tr><td colspan="9">Loading...</td></tr>`;
+
+    try {
+        const params = new URLSearchParams(filters).toString();
+        const res = await fetch("/ProjectPromotion/api/grid?" + params, {
+            cache: "no-store"   // prevent caching
+        });
+        const projects = await res.json();
+
+        // Clear after fetch
+        tbody.innerHTML = "";
+
+        if (!projects || projects.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9">No projects found</td></tr>`;
+            return;
+        }
+
+        projects.forEach(p => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>
+                  <select name="procmb${p.ID}">
+                    <option value="None"${p.PromotionStatus === 'None' ? ' selected' : ''}>None</option>
+                    <option value="PromoteNextBuild"${p.PromotionStatus === 'PromoteNextBuild' ? ' selected' : ''}>Promote-Next Build</option>
+                    <option value="PromoteNextSchemaBuild"${p.PromotionStatus === 'PromoteNextSchemaBuild' ? ' selected' : ''}>Promote-Next Schema Build</option>
+                  </select>
+                </td>
+                <td>${formatDate(p.PromotionDate)}</td>
+                <td>${formatDate(p.NextExtractionDate)}</td>
+                <td>${p.ModuleID || p.ModuleNo}</td>
+                <td>${p.ProjectFileName}</td>
+                <td>${p.DeveloperName || p.DeveloperID}</td>
+                <td>${formatDate(p.LastExtractionDate)}</td>
+                <td>${p.ManagerName || p.ProjectManagerID}</td>
+                <td>${p.PromoteID}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // ✅ Removed the override of select values based on PromoteType
+    } catch (err) {
+        console.error("Failed to load grid:", err);
+        document.getElementById("projectRows").innerHTML = `<tr><td colspan="9">Error loading data</td></tr>`;
+    }
+};
+</script>
+</body>
+</html>

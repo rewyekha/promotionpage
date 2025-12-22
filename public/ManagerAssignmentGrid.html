@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Manager Assignment Grid</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background: white;
+    overflow: auto;
+  }
+
+  table#managerGrid {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 12px;
+  }
+
+  thead th {
+    background-color: silver;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+
+  tbody td {
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    word-wrap: break-word;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background-color: yellow; }
+  tr:nth-child(odd) td { background-color: white; }
+
+  select {
+    font-size: 12px;
+    height: 22px;
+    width: 100%;
+  }
+
+  #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  #gridMessage {
+    color: red;
+    font-weight: bold;
+    margin: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="gridMessage"></div>
+
+<table id="managerGrid">
+  <thead>
+    <tr>
+      <th>Manager</th>
+      <th>Project Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody id="gridBody">
+    <!-- Rows injected via JS -->
+  </tbody>
+</table>
+
+<div id="endBar">End</div>
+
+<script>
+let isLoading = false;
+
+// Store current projects for tracking updates
+let currentProjects = [];
+
+window.loadGrid = async function(filters = {}) {
+  const tbody = document.getElementById('gridBody');
+  if (isLoading) return;
+  isLoading = true;
+
+  tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; font-weight:bold;">Loading...</td></tr>`;
+  await new Promise(requestAnimationFrame); // force render
+
+  try {
+    const res = await fetch('/api/ManagerAssignmentGrid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    });
+    const data = await res.json();
+
+    tbody.innerHTML = "";
+    currentProjects = data.projects || [];
+
+    if (!currentProjects.length) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; font-weight:bold; color:red;">No records found.</td></tr>`;
+      return;
+    }
+
+    let isWhite = true;
+    currentProjects.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.style.backgroundColor = isWhite ? 'White' : 'WhiteSmoke';
+      isWhite = !isWhite;
+
+      // Manager dropdown
+      const tdManager = document.createElement('td');
+      const select = document.createElement('select');
+      select.name = "devcmb" + p.ID;
+      select.dataset.originalManager = p.ProjectManagerID; // store original
+
+      data.managers.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.DeveloperID;
+        opt.text = m.DeveloperName;
+        if (m.DeveloperID === p.ProjectManagerID) opt.selected = true;
+        select.appendChild(opt);
+      });
+      tdManager.appendChild(select);
+
+      // Project Name
+      const tdProject = document.createElement('td');
+      tdProject.textContent = p.ProjectFldr;
+
+      // Description
+      const tdDesc = document.createElement('td');
+      tdDesc.textContent = p.Description;
+
+      tr.appendChild(tdManager);
+      tr.appendChild(tdProject);
+      tr.appendChild(tdDesc);
+
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Failed to load grid:", err);
+  } finally {
+    isLoading = false;
+  }
+};
+
+async function updateManagers() {
+  const rows = document.querySelectorAll("#managerGrid tbody tr");
+  const updates = [];
+
+  rows.forEach(row => {
+    const select = row.querySelector("select");
+    const projectId = select.name.replace("devcmb", "");
+    const originalManager = select.dataset.originalManager;
+    if (select.value !== originalManager) {
+      updates.push({ projectId, managerId: select.value });
+    }
+  });
+
+  const msg = document.getElementById("gridMessage");
+
+  if (!updates.length) {
+    msg.style.color = "blue";
+    msg.textContent = "No changes to update.";
+    setTimeout(() => msg.textContent = "", 3000);
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/ManagerAssignmentUpdate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ updates })
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      // Remove updated rows from grid
+      updates.forEach(u => {
+        const row = document.querySelector(`select[name="devcmb${u.projectId}"]`).closest("tr");
+        if (row) row.remove();
+      });
+
+      msg.style.color = "green";
+      msg.textContent = "Manager(s) updated successfully!";
+      setTimeout(() => msg.textContent = "", 500);
+
+    } else {
+      msg.style.color = "red";
+      msg.textContent = "Update failed!";
+      setTimeout(() => msg.textContent = "", 500);
+    }
+
+  } catch (err) {
+    console.error(err);
+    msg.style.color = "red";
+    msg.textContent = "Error updating managers.";
+    setTimeout(() => msg.textContent = "", 500);
+  }
+}
+
+// Listen to toolbar messages
+window.addEventListener("message", event => {
+  if (event.data.FormMode === "Update") {
+    updateManagers();
+  } else {
+    loadGrid(event.data);
+  }
+});
+</script>
+
+</body>
+</html>

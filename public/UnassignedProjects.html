@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Build Status Tool Bar</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 3.0">
+<meta name="Microsoft Border" content="none">
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: #FFFFFF url('Images/NAV1.JPG');
+}
+table {
+  border-collapse: collapse;
+}
+th, td {
+  padding: 2px;
+  font-size: small;
+}
+th {
+  background-color: Silver;
+  text-align: left;
+}
+
+#endBar {
+background: black;
+color: white;
+text-align: center;
+font-weight: bold;
+padding: 4px;
+font-size: 12px;
+margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<table width="100%">
+  <tr>
+    <td width="13%" align="center" style="color:white; font-size:16px;">Unassigned Projects</td>
+  </tr>
+</table>
+
+<table id="projectsTable" width="100%" cellspacing="2" cellpadding="0" border="0" style="table-layout:fixed;">
+  <tr style="background-color:Silver;">
+    <th style="width:70px; text-align:left;">Module</th>
+    <th style="width:151px; text-align:left;">Project Name</th>
+    <th style="width:250px; text-align:left;">Description</th>
+    <th style="width:150px; text-align:left;">Developer</th>
+    <th style="text-align:left;">Manager</th>
+  </tr>
+</table>
+
+
+ <div id="endBar">End</div>
+
+<script>
+async function loadProjects() {
+  try {
+    const res = await fetch('/api/unassigned-projects');
+    const data = await res.json();
+    const table = document.getElementById('projectsTable');
+    let color = 'Yellow';
+
+    data.forEach(p => {
+      color = (color === 'White') ? 'Yellow' : 'White';
+      const row = table.insertRow();
+      row.style.backgroundColor = color;
+
+      row.insertCell().innerHTML = p.ModuleID || '';
+      row.insertCell().innerHTML = p.ProjectFileName || '';
+      row.insertCell().innerHTML = p.Description || '';
+      row.insertCell().innerHTML = p.DeveloperName || '';
+      row.insertCell().innerHTML = p.ManagerName || '';
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+loadProjects();
+</script>
+
+</body>
+</html>

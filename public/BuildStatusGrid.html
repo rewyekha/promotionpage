@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Build Status Grid</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    background: white;
+    overflow: auto; /* scroll only if needed */
+  }
+
+  table#buildGrid {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed; /* prevent horizontal scrollbar */
+    font-size: 12px;
+  }
+
+  thead th {
+    background-color: silver;
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    text-align: left;
+  }
+
+  tbody td {
+    padding: 2px 4px;
+    border: 1px solid #ccc;
+    word-wrap: break-word;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background-color: WhiteSmoke; }
+  tr:nth-child(odd) td { background-color: White; }
+
+  a {
+    color: blue;
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  #endBar {
+    background: black;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 4px;
+    font-size: 12px;
+    margin-top: 2px; /* right below last row */
+  }
+</style>
+</head>
+<body>
+<div id="gridMessage" style="color:red; font-weight:bold; margin:4px;"></div>
+<table id="buildGrid">
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Build Date</th>
+      <th>Build</th>
+      <th>Module</th>
+      <th>Project Name</th>
+      <th>Developer</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody id="gridBody">
+    <!-- Data rows injected via JS -->
+  </tbody>
+</table>
+
+<div id="endBar">End</div>
+
+<script>
+let isLoading = false; // prevent overlapping loads
+
+window.loadGrid = async function(filters = {}) {
+  const tbody = document.getElementById('gridBody');
+    // If a load is already in progress, cancel the next one
+  if (isLoading) return;
+  isLoading = true;
+
+  // 🔹 Show loading message inside the table
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; font-weight:bold;">Loading...</td></tr>`;
+    await new Promise(requestAnimationFrame); // 🟢 force browser to render "Loading..."
+  try {
+  
+    const res = await fetch('/api/buildstatus/grid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters)
+    });
+    const data = await res.json();
+
+    // Clear old rows
+        tbody.innerHTML = "";
+
+        // Determine message for "no data" situations
+      let noDataMessage = "";
+
+      if (!data.data || data.data.length === 0) {
+        // If query mode, check developer filter
+        if (filters.FormMode === "Query") {
+          if (!filters.qryDeveloperID || filters.qryDeveloperID.trim() === "") {
+            noDataMessage = "No projects found for developer selected.";
+          } else {
+            noDataMessage = `No projects found for developer '${filters.qryDeveloperID}'.`;
+          }
+        } else {
+          noDataMessage = "No records found for the selected filters.";
+        }
+
+        // Show message inside table
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; font-weight:bold; color:red;">
+              ${noDataMessage}
+            </td>
+          </tr>`;
+        return;
+      }
+          
+
+    let isWhite = true;
+
+    data.data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.style.backgroundColor = isWhite ? 'White' : 'WhiteSmoke';
+      isWhite = !isWhite;
+
+      tr.innerHTML = `
+        <td>${row.BuildStatus}</td>
+        <td>${(row.FormattedBuildDate)}</td>
+        <td>${row.PromotionLabel}</td>
+        <td>${row.ModuleID}</td>
+        <td><a href="/BuildDetails?ProjectID=${row.ID}" target="_blank">${row.ProjectFileName}</a></td>
+        <td>${row.DeveloperName}</td>
+        <td>${row.Description}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // // Show alert ONLY if Query clicked AND no rows
+    // if (filters.FormMode === "Query" && data.data.length === 0) {
+    //   alert(data.message || "No projects found.");
+    // } 
+
+  } catch (err) {
+    console.error("Error loading grid:", err);
+  }finally {
+    isLoading = false; // unlock
+  }
+}
+
+// Listen to toolbar iframe messages
+window.addEventListener("message", event => loadGrid(event.data));
+
+// Initial load
+//loadGrid({});
+</script>
+
+</body>
+</html>

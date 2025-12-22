@@ -1,0 +1,81 @@
+<html>
+<head>
+  <script>
+    // ✅ VBScript-equivalent validation converted to JavaScript
+    function ValidateForm() {
+        var form = document.forms["frmUserReg"];
+        var name = form["DeveloperName"].value.trim();
+        var mail = form["MailID"].value.trim();
+
+        if (name === "") {
+            alert("Name can't be blank");
+        } else {
+            if (mail === "") {
+                alert("Email can't be blank");
+            } else {
+                form["FormMode"].value = "Update";
+                form.submit();
+            }
+        }
+    }
+  </script>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>Acuity Builder User Registration</title>
+</head>
+<body bgcolor="#FFFFFF" topmargin="0" leftmargin="0">
+
+  <form name="frmUserReg" action="/UserRegistration" method="POST">
+    <table width="100%" cellspacing="0" cellpadding="0" background="Images/NAV1.JPG">
+      <tr>
+        <td align="center"><font size="5" color="#FFFFFF">User Registration</font></td>
+      </tr>
+      <tr>
+        <td align="left" nowrap>
+          <!-- ✅ Matches ASP: button runs ValidateForm -->
+          <input type="button" value="Update" name="cmdUpdate" onclick="ValidateForm()">
+          <input type="hidden" value="Display" name="FormMode">
+        </td>
+      </tr>
+    </table>
+
+    <!-- ✅ New: message area -->
+    <div id="message" style="margin:10px; font-weight:bold;"></div>
+
+    <table width="100%" cellspacing="0" cellpadding="2" border="0">
+      <tr valign="top">
+        <td height="25" align="left" nowrap><font size="-1">&nbsp;&nbsp;User ID</font></td>
+        <td width="100%"><font size="-1"><b>{{DeveloperID}}</b></font></td>
+      </tr>
+
+      <tr valign="top">
+        <td height="25" align="left" nowrap><font size="-1">&nbsp;&nbsp;Name</font></td>
+        <td width="100%">
+          <input type="text" name="DeveloperName" size="52" maxlength="50" value="{{DeveloperName}}">
+        </td>
+      </tr>
+
+      <tr valign="top">
+        <td height="25" align="left" nowrap><font size="-1">&nbsp;&nbsp;EMail ID</font></td>
+        <td width="100%">
+          <input type="text" name="MailID" size="52" maxlength="50" value="{{MailID}}">
+        </td>
+      </tr>
+    </table>
+  </form>
+
+  <script>
+    // ✅ Show messages from querystring inside page
+    const urlParams = new URLSearchParams(window.location.search);
+    const msg = urlParams.get("msg");
+    if (msg) {
+      const messageDiv = document.getElementById("message");
+      if (msg.startsWith("Error:")) {
+        messageDiv.style.color = "red";    // error
+      } else {
+        messageDiv.style.color = "green";  // success
+      }
+      messageDiv.textContent = msg;
+    }
+  </script>
+</body>
+</html>

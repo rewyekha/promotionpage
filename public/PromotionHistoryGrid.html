@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Promotion History Grid</title>
+<style>
+body { font-family: Arial, Helvetica, sans-serif; margin:0; padding:0; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 2px; font-size: 12px; text-align: left; }
+th { background-color: navy; color: white; }
+tr:nth-child(even) { background-color: whitesmoke; }
+tr:nth-child(odd) { background-color: white; }
+a { text-decoration: none; color: blue; }
+a:hover { text-decoration: underline; cursor: pointer; }
+select { font-size: 12px; }
+tfoot td { background-color: black; color: white; text-align: center; font-weight: bold; padding: 4px; }
+</style>
+<script>
+// -----------------------------
+// Track loading state to prevent multiple fetches
+// -----------------------------
+let isLoading = false;
+
+// Default filters for projects
+let defaultFilters = {
+  ModuleNo: "0",
+  ProjectType: "All",
+  DeveloperID: "current",
+  ProjectMask: "",
+  DescriptionMask: ""
+};
+
+// Listen to messages from parent toolbar or iframe
+window.addEventListener("message", async (event) => {
+  if (event.data.action === "filter") {
+    const filters = event.data.filters;
+    await loadProjects(filters);
+  }
+});
+
+// Remove auto-load on page load; show empty grid
+window.onload = () => {
+  renderEmptyGrid();
+};
+
+// -----------------------------
+// Render empty grid placeholder
+// -----------------------------
+function renderEmptyGrid() {
+  const container = document.getElementById("gridContainer");
+  container.innerHTML = "";
+
+  const table = document.createElement("table");
+
+  // Header for project list
+  const thead = document.createElement("thead");
+  const headerRow = thead.insertRow();
+  ["Project Name","Description","Developer Name","Project Type"].forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(thead);
+
+  // Empty body
+  const tbody = document.createElement("tbody");
+  table.appendChild(tbody);
+
+  // Footer
+  const tfoot = document.createElement("tfoot");
+  const footerRow = tfoot.insertRow();
+  const td = footerRow.insertCell();
+  td.colSpan = 4;
+  td.textContent = "End";
+  tfoot.appendChild(footerRow);
+  table.appendChild(tfoot);
+
+  container.appendChild(table);
+}
+
+// -----------------------------
+// Load projects with manager-grid style refresh
+// -----------------------------
+async function loadProjects(filters) {
+  if (isLoading) return; // Prevent multiple loads
+  isLoading = true;
+
+  const container = document.getElementById("gridContainer");
+  container.innerHTML = ""; 
+
+  const table = document.createElement("table");
+  const headers = ["Project Name","Description","Developer Name","Project Type"];
+
+  // -----------------------------
+  // Table header
+  // -----------------------------
+  const thead = document.createElement("thead");
+  const headerRow = thead.insertRow();
+  headers.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(thead);
+
+  // -----------------------------
+  // Body with loading row
+  // -----------------------------
+  const tbody = document.createElement("tbody");
+  const loadingRow = tbody.insertRow();
+  const tdLoading = loadingRow.insertCell();
+  tdLoading.colSpan = headers.length;
+  tdLoading.style.textAlign = "left";
+  tdLoading.textContent = "Loading...";
+  tbody.appendChild(loadingRow);
+  table.appendChild(tbody);
+
+  // -----------------------------
+  // Table footer
+  // -----------------------------
+  const tfoot = document.createElement("tfoot");
+  const footerRow = tfoot.insertRow();
+  const tdFooter = footerRow.insertCell();
+  tdFooter.colSpan = headers.length;
+  tdFooter.textContent = "End";
+  tfoot.appendChild(footerRow);
+  table.appendChild(tfoot);
+
+  container.appendChild(table);
+
+  // -----------------------------
+  // Force browser to render loading row before fetch
+  // -----------------------------
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  // -----------------------------
+  // Fetch projects
+  // -----------------------------
+  try {
+    const res = await fetch("/PromotionHistoryGrid/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(filters)
+    });
+    const projects = await res.json();
+
+    tbody.innerHTML = "";
+
+    if (!projects || projects.length === 0) {
+      const tr = tbody.insertRow();
+      const tdEmpty = tr.insertCell();
+      tdEmpty.colSpan = headers.length;
+      tdEmpty.style.textAlign = "left";
+      tdEmpty.textContent = "No projects found";
+    } else {
+      let color = "White";
+      projects.forEach(rowData => {
+        color = (color === "White") ? "WhiteSmoke" : "White";
+        const row = tbody.insertRow();
+        row.style.backgroundColor = color;
+
+        const link = document.createElement("a");
+        link.textContent = rowData.ProjectFileName;
+        link.onclick = () => loadHistory(rowData.ID);
+
+        row.insertCell().appendChild(link);
+        row.insertCell().textContent = rowData.Description;
+        row.insertCell().textContent = rowData.DeveloperName;
+        row.insertCell().textContent = rowData.ProjectTypeDesc;
+      });
+    }
+  } catch(err) {
+    tbody.innerHTML = "";
+    const tr = tbody.insertRow();
+    const tdError = tr.insertCell();
+    tdError.colSpan = headers.length;
+    tdError.style.textAlign = "left";
+    tdError.textContent = "Error loading data";
+    console.error(err);
+  } finally {
+    isLoading = false; // Reset loading state
+  }
+}
+
+// -----------------------------
+// Load promotion history with refresh concept
+// -----------------------------
+async function loadHistory(projectId) {
+  if (isLoading) return;
+  isLoading = true;
+
+  const container = document.getElementById("gridContainer");
+  container.innerHTML = ""; 
+
+  const table = document.createElement("table");
+  const headers = ["Project Name","Promotion Date","Promoted By","Action","Last Extraction Date"];
+
+  // Header
+  const thead = document.createElement("thead");
+  const headerRow = thead.insertRow();
+  headers.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+  table.appendChild(thead);
+
+  // Body with loading row
+  const tbody = document.createElement("tbody");
+  const loadingRow = tbody.insertRow();
+  const tdLoading = loadingRow.insertCell();
+  tdLoading.colSpan = headers.length;
+  tdLoading.style.textAlign = "left";
+  tdLoading.textContent = "Loading...";
+  tbody.appendChild(loadingRow);
+  table.appendChild(tbody);
+
+  // Footer
+  const tfoot = document.createElement("tfoot");
+  const footerRow = tfoot.insertRow();
+  const tdFooter = footerRow.insertCell();
+  tdFooter.colSpan = headers.length;
+  tdFooter.textContent = "End";
+  tfoot.appendChild(footerRow);
+  table.appendChild(tfoot);
+
+  container.appendChild(table);
+
+  // Force render
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  // Fetch history data
+  try {
+    const res = await fetch(`/PromotionHistoryGrid/history/${projectId}`);
+    const history = await res.json();
+
+    tbody.innerHTML = "";
+
+    if (!history || history.length === 0) {
+      const tr = tbody.insertRow();
+      const tdEmpty = tr.insertCell();
+      tdEmpty.colSpan = headers.length;
+      tdEmpty.style.textAlign = "left";
+      tdEmpty.textContent = "No promotion history found";
+    } else {
+      let color = "White";
+      history.forEach(h => {
+        color = (color === "White") ? "WhiteSmoke" : "White";
+        const row = tbody.insertRow();
+        row.style.backgroundColor = color;
+
+        row.insertCell().textContent = h.ProjectName;
+        row.insertCell().textContent = h.FormattedPromotionDate || "";
+        row.insertCell().textContent = h.FormattedLastExtractionDate || "";
+        row.insertCell().textContent = h.PromotedBy || "";
+        row.insertCell().textContent = h.Action || "";
+      });
+    }
+  } catch(err) {
+    tbody.innerHTML = "";
+    const tr = tbody.insertRow();
+    const tdError = tr.insertCell();
+    tdError.colSpan = headers.length;
+    tdError.style.textAlign = "left";
+    tdError.textContent = "Error loading data";
+    console.error(err);
+  } finally {
+    isLoading = false;
+  }
+}
+</script>
+</head>
+<body>
+<div id="gridContainer"></div>
+</body>
+</html>

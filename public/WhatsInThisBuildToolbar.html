@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Whats In This Build Tool Bar</title>
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #B0C4DE;
+    margin: 0;
+}
+table { border-collapse: collapse; }
+td { padding: 2px; }
+button { width: 110px; }
+</style>
+</head>
+<body>
+<table style="background-color:navy; width:100%" cellspacing="0" cellpadding="0">
+  <tr>
+    <td style="font-size:17px; color:white; font-weight:bold; text-align:center">
+      What's New In This Build: <span id="currentBuild"></span>
+    </td>
+  </tr>
+</table>
+
+<table style="background-color:#B0C4DE;" cellspacing="2" cellpadding="0">
+  <tbody style="color:black; font-size:small; white-space:nowrap">
+    <tr align="center">
+      <td width="13%" align="left"><button id="btnQuery">Query</button></td>
+      <td style="width:100px" align="right">Operation:</td>
+      <td>
+        <select id="cmbOperation">
+          <option value="All">All</option>
+          <option value="Get" selected>Get</option>
+          <option value="Build">Build</option>
+        </select>
+      </td>
+      <td style="width:100px" align="right">Module:</td>
+      <td>
+        <select id="cmbModuleNo"></select>
+      </td>
+      <td style="width:100px" align="right">Developer:</td>
+      <td>
+        <select id="cmbDeveloperID"></select>
+      </td>
+      <td style="width:100px" align="right">Build Label:</td>
+      <td>
+        <select id="cmbBuildLabel"></select>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+async function loadToolbarData() {
+    try {
+        const res = await fetch("/WhatsInThisBuildToolbar/api/data");
+        const data = await res.json();
+
+        // Current build
+        document.getElementById("currentBuild").textContent = data.settings[0]?.CurrentBuildNo || "";
+
+        // Modules
+        const cmbModule = document.getElementById("cmbModuleNo");
+        cmbModule.innerHTML = `<option value="0" selected>All</option>`;
+        data.modules.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m.ModuleNo;
+            opt.text = m.ModuleID;
+            cmbModule.appendChild(opt);
+        });
+
+        // Developers
+        const cmbDev = document.getElementById("cmbDeveloperID");
+        cmbDev.innerHTML = `<option value="All">All</option>`;
+        data.developers.forEach(d => {
+            const opt = document.createElement("option");
+            opt.value = d.DeveloperID;
+            opt.text = d.DeveloperName;
+            cmbDev.appendChild(opt);
+        });
+
+        // Build Labels
+        const cmbLabel = document.getElementById("cmbBuildLabel");
+        data.buildLabels.forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b.BuildLabel;
+            opt.text = b.BuildLabel;
+            cmbLabel.appendChild(opt);
+        });
+    } catch (err) {
+        console.error("Failed to load toolbar data", err);
+    }
+}
+
+// Event listener to send filters to the grid
+document.getElementById("btnQuery").addEventListener("click", () => {
+    const filters = {
+        operation: document.getElementById("cmbOperation").value,
+        moduleNo: document.getElementById("cmbModuleNo").value,
+        developerID: document.getElementById("cmbDeveloperID").value,
+        buildLabel: document.getElementById("cmbBuildLabel").value
+    };
+
+    // Find the grid iframe and call loadGrid
+    const gridIframe = parent.document.getElementById("grid");
+    if (gridIframe && gridIframe.contentWindow.loadGrid) {
+        gridIframe.contentWindow.loadGrid(filters);
+    }
+});
+
+// Load toolbar data on page load
+loadToolbarData();
+</script>
+</body>
+</html>

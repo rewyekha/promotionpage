@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="iso-8859-1">
+  <title>Developer Assignment</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* Hide overall scrollbar */
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #FFFFFF;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    #toolbar {
+      height: 55px; /* same as original ASP frame height */
+      width: 100%;
+      border: none;
+      flex-shrink: 0; /* keep fixed height */
+      overflow: hidden; /* hide toolbar scrollbars */
+    }
+    #grid {
+      flex: 1; /* takes remaining space */
+      width: 100%;
+      border: none;
+      overflow: auto; /* grid can scroll if needed */
+    }
+  </style>
+</head>
+<body>
+  <!-- Toolbar iframe (replaces DeveloperAssignmentToolBar.asp) -->
+  <iframe id="toolbar" name="ToolBar" src="/DeveloperAssignmentToolBar" scrolling="no"></iframe>
+
+  <!-- Grid iframe (replaces DeveloperAssignmentGrid.asp) -->
+  <iframe id="grid" name="GridForm" src="/DeveloperAssignmentGrid" scrolling="yes"></iframe>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Role Assignment Tool Bar</title>
+<style>
+body { margin: 0; background: #FFFFFF url('Images/NAV1.JPG'); font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
+table { border-collapse: collapse; width: 100%; }
+td { padding: 0 2px; white-space: nowrap; vertical-align: middle; }
+button { padding: 2px 5px; font-size: 12px; height: 22px; line-height: 1; margin-right: 2px; }
+font { color: white; }
+#toolbarMsg { color: green; font-weight: bold; margin-left: 10px; display: inline-block; }
+</style>
+</head>
+<body>
+<form id="frmRoleToolBar">
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center"><font size="4.5">Role Assignment</font></td>
+    </tr>
+  </table>
+
+  <table width="100%" cellspacing="2" cellpadding="0">
+    <tr>
+      <td align="left" nowrap>
+        <button type="button" id="btnUpdate">Update</button>
+        <button type="button" id="btnRefresh">Refresh</button>
+        <span id="toolbarMsg"></span>
+      </td>
+    </tr>
+  </table>
+</form>
+
+<script>
+function showMessage(msg, color='green') {
+  const span = document.getElementById('toolbarMsg');
+  span.textContent = msg;
+  span.style.color = color;
+  setTimeout(() => { span.textContent = ''; }, 1000); // clear after 1 sec
+}
+
+// Send FormMode to Grid iframe
+function sendFormMode(mode) {
+  const gridIframe = document.getElementById("grid") || parent.document.getElementById("grid");
+  if (!gridIframe) return;
+  gridIframe.contentWindow.postMessage({ FormMode: mode }, "*");
+
+  if(mode === "Update") {
+    showMessage("Updated successfully");
+  } else if(mode === "Refresh") {
+    showMessage("Refreshed");
+  }
+
+  // Reload the grid after 1 sec
+  setTimeout(() => {
+    gridIframe.contentWindow.postMessage({ FormMode: "Display" }, "*");
+  }, 1000);
+}
+
+// Button event listeners
+document.getElementById("btnUpdate").addEventListener("click", () => sendFormMode("Update"));
+document.getElementById("btnRefresh").addEventListener("click", () => sendFormMode("Refresh"));
+</script>
+</body>
+</html>

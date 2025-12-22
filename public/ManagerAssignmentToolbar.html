@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="iso-8859-1">
+<title>Manager Assignment Toolbar</title>
+<style>
+  body {
+    margin: 0;
+    background: #FFFFFF url('Images/NAV1.JPG');
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  td { padding: 0 2px; white-space: nowrap; vertical-align: middle; }
+  button {
+    padding: 2px 5px;
+    font-size: 12px;
+    height: 22px;
+    line-height: 1;
+    margin-right: 2px;
+  }
+  select {
+    font-size: 12px;
+    height: 22px;
+    margin-left: 2px;
+  }
+  font { color: white; }
+</style>
+</head>
+<body>
+
+<form id="frmManagerAssignmentToolBar">
+  <!-- Header row -->
+  <table width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center"><font size="4">Manager Assignment</font></td>
+    </tr>
+  </table>
+
+  <!-- Toolbar row -->
+  <table width="100%" cellspacing="2" cellpadding="0">
+    <tr>
+      <td align="left" nowrap>
+        <button type="button" id="btnUpdate">Update</button>
+        <button type="button" id="btnQuery">Query</button>
+        <span style="color:white; margin-left:10px; font-size:16px">Manager: 
+          <select id="cmbProjectManagerID"></select>
+        </span>
+        <span style="color:white; margin-left:10px; font-size:16px">Module: 
+          <select id="cmbModuleNo"></select>
+        </span>
+      </td>
+    </tr>
+  </table>
+</form>
+
+<script>
+// Load Managers and Modules dynamically
+async function loadToolbarData() {
+  try {
+    const res = await fetch("/api/ManagerAssignmentToolbar");
+    const data = await res.json();
+
+    const cmbManager = document.getElementById("cmbProjectManagerID");
+    cmbManager.innerHTML = "<option value='All' selected>All</option>";
+    data.managers.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.DeveloperID;
+      opt.text = m.DeveloperName;
+      cmbManager.appendChild(opt);
+    });
+
+    const cmbModule = document.getElementById("cmbModuleNo");
+    cmbModule.innerHTML = "<option value='0' selected>All</option>";
+    data.modules.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m.ModuleNo;
+      opt.text = m.ModuleID;
+      cmbModule.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load toolbar data", err);
+  }
+}
+
+// Send filters to Grid iframe
+function sendFilters(mode) {
+  const filters = {
+    FormMode: mode,
+    QryProjectManagerID: document.getElementById("cmbProjectManagerID").value,
+    QryModuleNo: document.getElementById("cmbModuleNo").value
+  };
+
+  const gridIframe = parent.document.getElementById("gridFrame");
+  if (gridIframe && gridIframe.contentWindow) {
+    gridIframe.contentWindow.postMessage(filters, "*");
+  }
+}
+
+// Button events
+document.getElementById("btnQuery").addEventListener("click", () => sendFilters("Query"));
+document.getElementById("btnUpdate").addEventListener("click", () => sendFilters("Update"));
+
+// Initialize toolbar
+loadToolbarData();
+</script>
+</body>
+</html>

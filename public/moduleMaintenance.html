@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Module Maintenance</title>
+        <meta name="GENERATOR" content="Microsoft FrontPage 3.0">
+        <meta name="Microsoft Border" content="none">
+        <basefont FACE="Arial, Helvetica, sans-serif">
+        <link rel="stylesheet" href="/StyleSheets/style.css">
+        <style>
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-image: url('/Images/BACK2.JPG');
+                background-color: white;
+            }
+
+            .header-section {
+                width: 100%;
+                border: 0;
+                border-spacing: 0;
+                border-collapse: collapse;
+            }
+
+            .header-section th {
+                background-color: Silver;
+                background-image: url('/Images/NAV1.JPG');
+                font-size: 24px;
+                padding: 8px;
+                white-space: nowrap;
+            }
+
+            .header-section td {
+                background-color: Silver;
+                background-image: url('/Images/NAV1.JPG');
+                text-align: right;
+                vertical-align: middle;
+                width: 100%;
+                padding: 8px;
+            }
+
+            .status-section {
+                background-color: #FFFFCC;
+                padding: 4px 8px;
+                font-size: small;
+            }
+
+            .form-section {
+                padding: 20px;
+            }
+
+            .form-table {
+                width: 100%;
+                border-spacing: 0;
+                border-collapse: separate;
+                border-spacing: 2px;
+            }
+
+            .form-table tr {
+                vertical-align: top;
+            }
+
+            .form-table td {
+                height: 25px;
+                padding: 2px;
+            }
+
+            .form-table .label-cell {
+                text-align: left;
+                white-space: nowrap;
+                font-weight: bold;
+                font-size: small;
+                padding-left: 8px;
+            }
+
+            .form-table .value-cell {
+                width: 100%;
+                font-size: small;
+            }
+
+            .form-table input[type="text"] {
+                font-size: small;
+            }
+
+            .button-section input {
+                margin-right: 4px;
+            }
+
+            .navigation-section {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .navigation-section table {
+                width: 100%;
+            }
+
+            .navigation-section td {
+                vertical-align: middle;
+            }
+
+            .navigation-section .nav-buttons {
+                text-align: left;
+            }
+
+            .navigation-section .record-info {
+                text-align: right;
+                font-size: small;
+            }
+
+            .loading {
+                text-align: center;
+                padding: 20px;
+                font-style: italic;
+                color: #666;
+            }
+
+            .error {
+                text-align: center;
+                padding: 20px;
+                color: red;
+                background-color: #ffeeee;
+                border: 1px solid red;
+                margin: 10px;
+            }
+
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body topmargin="0">
+        <form id="moduleMaintenanceForm" method="POST">
+            <!-- Header Section -->
+            <table class="header-section">
+                <tr>
+                    <th nowrap>
+                        <font size="6">&nbsp;Module Maintenance&nbsp;</font>
+                    </th>
+                    <td class="button-section">
+                        <!-- Buttons will be populated by JavaScript based on current mode -->
+                        <div id="buttonContainer">
+                            <input type="button" id="updateBtn" value="Update" style="display: none;">
+                            <input type="button" id="deleteBtn" value="Delete" style="display: none;">
+                            <input type="button" id="newBtn" value="New" style="display: none;">
+                            <input type="button" id="applyBtn" value=" Apply " style="display: none;">
+                            <input type="button" id="insertBtn" value=" Insert " style="display: none;">
+                            <input type="button" id="cancelBtn" value=" Cancel " style="display: none;">
+                            <input type="button" id="listViewBtn" value="List View">&nbsp;
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="status-section">
+                        <span id="statusMessage">Loading...</span>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Loading Message -->
+            <div id="loadingMessage" class="loading">Loading module data...</div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error" style="display: none;"></div>
+
+            <!-- Form Section -->
+            <div id="formSection" class="form-section" style="display: none;">
+                <table class="form-table">
+                    <tr>
+                        <td class="label-cell">&nbsp;&nbsp;Module ID</td>
+                        <td class="value-cell">
+                            <input type="text" id="ModuleID" name="ModuleID" size="12" maxlength="10">
+                            <span id="moduleIdDisplay" style="display: none;"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">&nbsp;&nbsp;Module No</td>
+                        <td class="value-cell">
+                            <input type="text" id="ModuleNo" name="ModuleNo" size="12" maxlength="10">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">&nbsp;&nbsp;Description</td>
+                        <td class="value-cell">
+                            <input type="text" id="Description" name="Description" size="52" maxlength="50">
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Navigation Section -->
+                <div id="navigationSection" class="navigation-section">
+                    <table>
+                        <tr>
+                            <td class="nav-buttons">
+                                <input type="button" id="firstBtn" value="   <<   ">
+                                <input type="button" id="prevBtn" value="   <    ">
+                                <input type="button" id="nextBtn" value="    >   ">
+                                <input type="button" id="lastBtn" value="   >>   ">
+                                <input type="button" id="requeryBtn" value=" Requery ">
+                            </td>
+                            <td class="record-info">
+                                <nobr>Record: <span id="recordNumber">1</span></nobr>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- List View Section -->
+            <div id="listSection" class="hidden">
+                <table id="moduleList" border="1" cellspacing="0" cellpadding="2"
+                    style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: silver;">
+                            <th style="width: 40px;">#</th>
+                            <th>Module ID</th>
+                            <th>Module No</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moduleListBody">
+                        <!-- Module list will be populated here -->
+                    </tbody>
+                </table>
+
+                <!-- List View Navigation -->
+                <div style="margin-top: 10px;">
+                    <table style="width: 100%; border: 0;">
+                        <tr>
+                            <td style="text-align: left;">
+                                <input type="button" id="listFirstBtn" value="   <<   ">
+                                <input type="button" id="listPrevBtn" value="   <    ">
+                                <input type="button" id="listNextBtn" value="    >   ">
+                                <input type="button" id="listLastBtn" value="   >>   ">
+                                <input type="button" id="listRequeryBtn" value=" Requery ">
+                            </td>
+                            <td style="text-align: right;">
+                                <nobr>Page: <span id="listPageNumber">1</span></nobr>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hidden Fields -->
+            <input type="hidden" id="currentMode" value="Edit">
+            <input type="hidden" id="currentRecordIndex" value="0">
+            <input type="hidden" id="totalRecords" value="0">
+            <input type="hidden" id="dataAction" name="dataAction">
+            <input type="hidden" id="originalModuleID" name="originalModuleID">
+        </form>
+
+        <script src="/module-maintenance/moduleMaintenanceMinimal.js"></script>
+    </body>
+
+</html>

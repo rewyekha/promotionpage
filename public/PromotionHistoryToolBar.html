@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-1">
+<title>Promotion History Tool Bar</title>
+<style>
+body { font-family:Arial, Helvetica, sans-serif; background-color:#B0C4DE; margin:0; }
+table { border-collapse: collapse; }
+</style>
+<script>
+let dropdownData = null;
+
+async function loadDropdowns() {
+  const res = await fetch("/PromotionHistoryToolBar/data");
+  dropdownData = await res.json();
+
+  const moduleSelect = document.getElementById("cmbModuleNo");
+  dropdownData.modules.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.ModuleNo;
+    opt.textContent = m.Description;
+    moduleSelect.appendChild(opt);
+  });
+
+  const typeSelect = document.getElementById("cmbProjType");
+  dropdownData.projectTypes.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t.ProjectTypeID;
+    opt.textContent = t.Description;
+    typeSelect.appendChild(opt);
+  });
+
+  const devSelect = document.getElementById("cmbDeveloperID");
+  dropdownData.developers.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d.DeveloperID;
+    opt.textContent = d.DeveloperName;
+    devSelect.appendChild(opt);
+  });
+}
+
+// Sends filter data to the grid iframe
+function submitForm() {
+  const filters = {
+    ModuleNo: document.getElementById("cmbModuleNo").value,
+    ProjectType: document.getElementById("cmbProjType").value,
+    DeveloperID: document.getElementById("cmbDeveloperID").value,
+    ProjectMask: document.getElementById("txtProjectMask").value,
+    DescriptionMask: document.getElementById("txtDescriptionMask").value
+  };
+
+  const gridFrame = window.parent.frames[1]; // second iframe is the grid
+  gridFrame.postMessage({ action: "filter", filters }, "*");
+}
+
+window.onload = loadDropdowns;
+</script>
+</head>
+<body>
+<table style="width:100%; background-color:navy; color:white; font-weight:bold;">
+<tr><td align="center" style="font-size:17px;">Promotion History</td></tr>
+</table>
+
+<table style="background-color:#B0C4DE; font-size:small; white-space:nowrap;">
+<tr>
+  <td align="left">Filter by Project:</td>
+  <td><input id="txtProjectMask" size="30"></td>
+  <td>Use % mask to filter.</td>
+  <td align="right">Module:</td>
+  <td><select id="cmbModuleNo"><option value="0" selected>All</option></select></td>
+</tr>
+<tr>
+  <td align="right">Filter by Description:</td>
+  <td><input id="txtDescriptionMask" size="30"></td>
+  <td></td>
+  <td align="right">Project Type:</td>
+  <td><select id="cmbProjType"><option value="All" selected>All</option></select></td>
+</tr>
+<tr>
+  <td><button onclick="submitForm()">Project List</button></td>
+  <td></td><td></td>
+  <td align="right">Developer:</td>
+  <td><select id="cmbDeveloperID"><option value="All">All</option></select></td>
+</tr>
+</table>
+</body>
+</html>
